@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="980" viewBox="0 0 1440 980">
+  <defs>
+    <style>
+      text { font-family: "Noto Serif CJK TC", serif; }
+      .ringlabel { font-size: 26px; fill: #E8DCC0; letter-spacing: 2px; }
+      .ringyear { font-size: 24px; fill: #C8A356; font-style: italic; }
+    </style>
+    <radialGradient id="glow" cx="50%" cy="46%" r="65%">
+      <stop offset="0%" stop-color="#2A4A61"/>
+      <stop offset="55%" stop-color="#1F3A4D"/>
+      <stop offset="100%" stop-color="#162C3C"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1440" height="980" fill="url(#glow)"/>
+
+  <!-- decorative frame -->
+  <rect x="34" y="34" width="1372" height="912" fill="none" stroke="#C8A356" stroke-width="2.5"/>
+  <rect x="46" y="46" width="1348" height="888" fill="none" stroke="#C8A356" stroke-width="1" opacity="0.55"/>
+  <!-- corner ornaments -->
+  <g stroke="#C8A356" stroke-width="2" fill="none" opacity="0.9">
+    <path d="M34 90 L90 34"/><path d="M1350 34 L1406 90"/>
+    <path d="M34 890 L90 946"/><path d="M1350 946 L1406 890"/>
+  </g>
+
+  <!-- tree rings : growth rings of a very old tree -->
+  <g transform="translate(720,470)">
+    <g fill="none" stroke="#C8A356">
+      <circle r="368" stroke-width="2.2" opacity="0.95"/>
+      <circle r="352" stroke-width="0.8" opacity="0.5"/>
+      <circle r="330" stroke-width="1.4" opacity="0.8"/>
+      <circle r="306" stroke-width="0.8" opacity="0.45"/>
+      <circle r="284" stroke-width="1.8" opacity="0.9"/>
+      <circle r="262" stroke-width="0.8" opacity="0.5"/>
+      <circle r="238" stroke-width="1.4" opacity="0.75"/>
+      <circle r="214" stroke-width="0.8" opacity="0.45"/>
+      <circle r="192" stroke-width="1.8" opacity="0.9"/>
+      <circle r="168" stroke-width="0.8" opacity="0.5"/>
+      <circle r="144" stroke-width="1.4" opacity="0.75"/>
+      <circle r="120" stroke-width="0.8" opacity="0.45"/>
+      <circle r="98"  stroke-width="1.8" opacity="0.9"/>
+      <circle r="74"  stroke-width="0.8" opacity="0.5"/>
+      <circle r="52"  stroke-width="1.4" opacity="0.8"/>
+      <circle r="30"  stroke-width="1"   opacity="0.6"/>
+    </g>
+    <circle r="9" fill="#C8A356"/>
+
+    <!-- ring year markers along the lower-left diagonal -->
+    <g>
+      <circle cx="-21" cy="21" r="5" fill="#E8DCC0"/>
+      <circle cx="-75" cy="75" r="5" fill="#E8DCC0"/>
+      <circle cx="-133" cy="133" r="5" fill="#E8DCC0"/>
+      <circle cx="-190" cy="190" r="5" fill="#E8DCC0"/>
+      <circle cx="-240" cy="240" r="5" fill="#E8DCC0"/>
+      <circle cx="-258" cy="258" r="5" fill="#E8DCC0"/>
+    </g>
+  </g>
+
+  <!-- callout lines from markers to labels -->
+  <g stroke="#8FA6B5" stroke-width="1.2" opacity="0.85" fill="none">
+    <polyline points="699,491 420,478 368,478"/>
+    <polyline points="645,545 420,533 368,533"/>
+    <polyline points="587,603 420,590 368,590"/>
+    <polyline points="530,660 420,647 368,647"/>
+    <polyline points="480,710 420,704 368,704"/>
+    <polyline points="462,728 430,758 368,758"/>
+  </g>
+  <g text-anchor="end">
+    <text x="356" y="487" class="ringyear">578 </text><text x="300" y="487" class="ringlabel">金剛組</text>
+    <text x="356" y="542" class="ringyear">1123 </text><text x="290" y="542" class="ringlabel">聖巴多羅買醫院</text>
+    <text x="356" y="599" class="ringyear">1288 </text><text x="290" y="599" class="ringlabel">Stora・新聖母醫院</text>
+    <text x="356" y="656" class="ringyear">1668 </text><text x="290" y="656" class="ringlabel">Merck</text>
+    <text x="356" y="713" class="ringyear">1864 </text><text x="290" y="713" class="ringlabel">Mayo Clinic</text>
+    <text x="356" y="767" class="ringyear">1953 </text><text x="290" y="767" class="ringlabel">屏東基督教醫院</text>
+  </g>
+
+  <!-- caption -->
+  <text x="720" y="912" text-anchor="middle" font-size="27" fill="#C8A356" letter-spacing="8">組 織 的 年 輪 ・ 五 十 年 一 圈</text>
+</svg>

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <defs><style>
+    text { font-family: "Noto Serif CJK TC", serif; fill: #333B41; }
+  </style></defs>
+  <rect width="1440" height="900" fill="#F7F2E6"/>
+  <rect x="20" y="20" width="1400" height="860" fill="none" stroke="#C8A356" stroke-width="2"/>
+
+  <text x="720" y="82" text-anchor="middle" font-size="34" fill="#1F3A4D" font-weight="bold" letter-spacing="4">同一卷底片，兩種命運</text>
+
+  <!-- shared film strip at top center -->
+  <g transform="translate(720,150)">
+    <rect x="-170" y="0" width="340" height="86" rx="8" fill="#1F3A4D"/>
+    <g fill="#F7F2E6">
+      <rect x="-152" y="10" width="18" height="13" rx="3"/><rect x="-118" y="10" width="18" height="13" rx="3"/>
+      <rect x="-84" y="10" width="18" height="13" rx="3"/><rect x="-50" y="10" width="18" height="13" rx="3"/>
+      <rect x="-16" y="10" width="18" height="13" rx="3"/><rect x="18" y="10" width="18" height="13" rx="3"/>
+      <rect x="52" y="10" width="18" height="13" rx="3"/><rect x="86" y="10" width="18" height="13" rx="3"/>
+      <rect x="120" y="10" width="18" height="13" rx="3"/>
+      <rect x="-152" y="63" width="18" height="13" rx="3"/><rect x="-118" y="63" width="18" height="13" rx="3"/>
+      <rect x="-84" y="63" width="18" height="13" rx="3"/><rect x="-50" y="63" width="18" height="13" rx="3"/>
+      <rect x="-16" y="63" width="18" height="13" rx="3"/><rect x="18" y="63" width="18" height="13" rx="3"/>
+      <rect x="52" y="63" width="18" height="13" rx="3"/><rect x="86" y="63" width="18" height="13" rx="3"/>
+      <rect x="120" y="63" width="18" height="13" rx="3"/>
+    </g>
+    <text x="0" y="125" text-anchor="middle" font-size="25" fill="#8C6239" letter-spacing="3">銀鹽・光學・精密塗佈・化學</text>
+  </g>
+
+  <!-- two branch arrows -->
+  <g stroke="#8A7B62" stroke-width="3" fill="none">
+    <path d="M 640 295 C 560 330, 460 345, 400 380"/>
+    <path d="M 800 295 C 880 330, 980 345, 1040 380"/>
+  </g>
+  <g fill="#8A7B62">
+    <path d="M 400 380 l 22 -6 l -10 20 z"/>
+    <path d="M 1040 380 l -22 -6 l 10 20 z"/>
+  </g>
+
+  <!-- KODAK side -->
+  <text x="360" y="440" text-anchor="middle" font-size="30" fill="#A4432E" font-weight="bold" letter-spacing="3">柯達：守著「產品」</text>
+  <!-- broken film pieces -->
+  <g transform="translate(360,480)">
+    <g transform="rotate(-8 0 0)">
+      <rect x="-150" y="20" width="120" height="58" rx="6" fill="#A4432E" opacity="0.9"/>
+      <g fill="#F7F2E6"><rect x="-138" y="27" width="13" height="9" rx="2"/><rect x="-114" y="27" width="13" height="9" rx="2"/><rect x="-90" y="27" width="13" height="9" rx="2"/><rect x="-66" y="27" width="13" height="9" rx="2"/><rect x="-138" y="62" width="13" height="9" rx="2"/><rect x="-114" y="62" width="13" height="9" rx="2"/><rect x="-90" y="62" width="13" height="9" rx="2"/><rect x="-66" y="62" width="13" height="9" rx="2"/></g>
+    </g>
+    <g transform="rotate(12 60 90)">
+      <rect x="0" y="60" width="120" height="58" rx="6" fill="#A4432E" opacity="0.75"/>
+      <g fill="#F7F2E6"><rect x="12" y="67" width="13" height="9" rx="2"/><rect x="36" y="67" width="13" height="9" rx="2"/><rect x="60" y="67" width="13" height="9" rx="2"/><rect x="84" y="67" width="13" height="9" rx="2"/><rect x="12" y="102" width="13" height="9" rx="2"/><rect x="36" y="102" width="13" height="9" rx="2"/><rect x="60" y="102" width="13" height="9" rx="2"/><rect x="84" y="102" width="13" height="9" rx="2"/></g>
+    </g>
+    <path d="M -20 30 L 0 90" stroke="#A4432E" stroke-width="2" stroke-dasharray="5 5"/>
+  </g>
+  <g font-size="22" text-anchor="middle">
+    <text x="360" y="660">1975 年發明數位相機，卻被要求「別聲張」</text>
+    <text x="360" y="695">現金流向股利與回購，能力未再應用</text>
+    <text x="360" y="742" font-size="25" fill="#A4432E" font-weight="bold">2012 年破產・負債 67.5 億美元</text>
+  </g>
+
+  <!-- FUJI side : three arrows to new fields -->
+  <text x="1080" y="440" text-anchor="middle" font-size="30" fill="#1F3A4D" font-weight="bold" letter-spacing="3">富士：帶著「能力」搬家</text>
+  <g stroke="#1F3A4D" stroke-width="3" fill="none">
+    <path d="M 1080 470 C 1000 510, 940 540, 900 580"/>
+    <path d="M 1080 470 C 1080 520, 1080 545, 1080 580"/>
+    <path d="M 1080 470 C 1160 510, 1220 540, 1260 580"/>
+  </g>
+  <g fill="#1F3A4D">
+    <path d="M 900 580 l 20 -8 l -7 21 z"/>
+    <path d="M 1080 580 l 11 -18 l 11 18 z" transform="rotate(180 1080 571)"/>
+    <path d="M 1260 580 l -20 -8 l 7 21 z"/>
+  </g>
+
+  <!-- cosmetics bottle -->
+  <g transform="translate(900,620)">
+    <rect x="-26" y="18" width="52" height="74" rx="10" fill="none" stroke="#1F3A4D" stroke-width="3.5"/>
+    <rect x="-14" y="0" width="28" height="18" fill="none" stroke="#1F3A4D" stroke-width="3.5"/>
+    <line x1="-26" y1="48" x2="26" y2="48" stroke="#C8A356" stroke-width="3"/>
+    <text x="0" y="128" text-anchor="middle" font-size="22">化妝品 Astalift</text>
+    <text x="0" y="156" text-anchor="middle" font-size="19" fill="#8A7B62">膠原蛋白・奈米分散</text>
+  </g>
+  <!-- medical -->
+  <g transform="translate(1080,620)">
+    <circle cx="0" cy="50" r="42" fill="none" stroke="#1F3A4D" stroke-width="3.5"/>
+    <path d="M -8 26 h16 v16 h16 v16 h-16 v16 h-16 v-16 h-16 v-16 h16 z" fill="#A4432E"/>
+    <text x="0" y="128" text-anchor="middle" font-size="22">醫療・再生醫學</text>
+    <text x="0" y="156" text-anchor="middle" font-size="19" fill="#8A7B62">影像診斷・iPS 細胞</text>
+  </g>
+  <!-- chip -->
+  <g transform="translate(1260,620)">
+    <rect x="-30" y="22" width="60" height="60" rx="6" fill="none" stroke="#1F3A4D" stroke-width="3.5"/>
+    <rect x="-14" y="38" width="28" height="28" fill="#C8A356"/>
+    <g stroke="#1F3A4D" stroke-width="3">
+      <line x1="-18" y1="22" x2="-18" y2="8"/><line x1="0" y1="22" x2="0" y2="8"/><line x1="18" y1="22" x2="18" y2="8"/>
+      <line x1="-18" y1="82" x2="-18" y2="96"/><line x1="0" y1="82" x2="0" y2="96"/><line x1="18" y1="82" x2="18" y2="96"/>
+    </g>
+    <text x="0" y="128" text-anchor="middle" font-size="22">半導體材料</text>
+    <text x="0" y="156" text-anchor="middle" font-size="19" fill="#8A7B62">光阻劑・研磨液</text>
+  </g>
+
+  <text x="1080" y="825" text-anchor="middle" font-size="25" fill="#1F3A4D" font-weight="bold">18 個月盤點出 70 多項可遷移技術</text>
+  <text x="360" y="825" text-anchor="middle" font-size="22" fill="#8A7B62" font-style="italic">「以產品定義自己」</text>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="980" viewBox="0 0 1440 980">
+  <defs><style>
+    text { font-family: "Noto Serif CJK TC", serif; fill: #333B41; }
+    .lbl { font-size: 23px; }
+    .yr { font-size: 19px; font-style: italic; fill: #7A6A50; }
+    .tick { font-size: 19px; fill: #8A7B62; font-style: italic; }
+  </style></defs>
+  <rect width="1440" height="980" fill="#F7F2E6"/>
+  <rect x="20" y="20" width="1400" height="940" fill="none" stroke="#C8A356" stroke-width="2"/>
+
+  <text x="720" y="78" text-anchor="middle" font-size="34" fill="#1F3A4D" letter-spacing="4" font-weight="bold">組織壽命對照表　578 – 2026</text>
+  <text x="720" y="112" text-anchor="middle" font-size="21" fill="#8A7B62">深色＝存續中　磚紅＝已終結／破產　金色＝屏東基督教醫院</text>
+
+  <!-- vertical gridlines -->
+  <g stroke="#D8CBAE" stroke-width="1">
+    <line x1="369" y1="150" x2="369" y2="852"/><line x1="507" y1="150" x2="507" y2="852"/>
+    <line x1="645" y1="150" x2="645" y2="852"/><line x1="783" y1="150" x2="783" y2="852"/>
+    <line x1="921" y1="150" x2="921" y2="852"/><line x1="1059" y1="150" x2="1059" y2="852"/>
+    <line x1="1197" y1="150" x2="1197" y2="852"/><line x1="1336" y1="150" x2="1336" y2="852"/>
+  </g>
+  <line x1="1353" y1="150" x2="1353" y2="852" stroke="#1F3A4D" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <g text-anchor="middle">
+    <text x="369" y="880" class="tick">600</text><text x="507" y="880" class="tick">800</text>
+    <text x="645" y="880" class="tick">1000</text><text x="783" y="880" class="tick">1200</text>
+    <text x="921" y="880" class="tick">1400</text><text x="1059" y="880" class="tick">1600</text>
+    <text x="1197" y="880" class="tick">1800</text><text x="1336" y="880" class="tick">2000</text>
+    <text x="1353" y="142" class="tick" font-weight="bold">今</text>
+  </g>
+
+  <!-- rows -->
+  <!-- 1 金剛組 578-2006 dead -->
+  <text x="42" y="185" class="lbl">金剛組（寺廟營造）</text>
+  <rect x="354" y="196" width="986" height="18" rx="9" fill="#A4432E"/>
+  <text x="354" y="188" class="yr">578</text>
+  <text x="1348" y="188" class="yr" text-anchor="end">2006 ✕ 1,428 年</text>
+
+  <!-- 2 Hotel-Dieu 651- -->
+  <text x="42" y="255" class="lbl">巴黎主宮醫院 Hôtel-Dieu</text>
+  <rect x="404" y="266" width="949" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="404" y="258" class="yr">651（傳）</text>
+
+  <!-- 3 St Bartholomew's 1123- -->
+  <text x="42" y="325" class="lbl">倫敦聖巴多羅買醫院</text>
+  <rect x="730" y="336" width="623" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="730" y="328" class="yr">1123　2023 年滿 900 週年</text>
+
+  <!-- 4 Santa Maria Nuova 1288- -->
+  <text x="42" y="395" class="lbl">佛羅倫斯新聖母醫院</text>
+  <rect x="844" y="406" width="509" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="844" y="398" class="yr">1288　最古老仍營運的醫院</text>
+
+  <!-- 5 Stora Enso 1288- -->
+  <text x="42" y="465" class="lbl">Stora Enso（銅礦→紙業）</text>
+  <rect x="844" y="476" width="509" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="844" y="468" class="yr">1288　最古老股權憑證</text>
+
+  <!-- 6 Merck 1668- -->
+  <text x="42" y="535" class="lbl">默克 Merck（製藥）</text>
+  <rect x="1106" y="546" width="247" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="1100" y="538" class="yr" text-anchor="end">1668　家族傳至第 13 代</text>
+
+  <!-- 7 HBC 1670-2025 dead -->
+  <text x="42" y="605" class="lbl">哈德遜灣公司（零售）</text>
+  <rect x="1108" y="616" width="245" height="18" rx="9" fill="#A4432E"/>
+  <text x="1102" y="608" class="yr" text-anchor="end">1670</text>
+  <text x="1348" y="608" class="yr" text-anchor="end">2025 ✕ 355 年</text>
+
+  <!-- 8 Mayo 1864- -->
+  <text x="42" y="675" class="lbl">梅約診所 Mayo Clinic</text>
+  <rect x="1242" y="686" width="111" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="1236" y="678" class="yr" text-anchor="end">1864　病人的需要優先</text>
+
+  <!-- 9 Kodak 1888-2012 dead -->
+  <text x="42" y="745" class="lbl">柯達 Kodak（影像）</text>
+  <rect x="1258" y="756" width="86" height="18" rx="9" fill="#A4432E"/>
+  <text x="1252" y="748" class="yr" text-anchor="end">1888</text>
+  <text x="1348" y="748" class="yr" text-anchor="end">2012 破產</text>
+
+  <!-- 10 Fujifilm 1934- -->
+  <text x="42" y="815" class="lbl">富士軟片 Fujifilm</text>
+  <rect x="1290" y="826" width="63" height="18" rx="9" fill="#1F3A4D"/>
+  <text x="1284" y="818" class="yr" text-anchor="end">1934　能力再應用而興旺</text>
+
+  <!-- 11 屏基 1953- gold -->
+  <rect x="30" y="892" width="1380" height="58" fill="#1F3A4D"/>
+  <text x="42" y="930" class="lbl" style="fill:#F5EFE2">屏東基督教醫院</text>
+  <rect x="1303" y="916" width="50" height="18" rx="9" fill="#C8A356"/>
+  <text x="1297" y="930" class="yr" text-anchor="end" style="fill:#E8DCC0">1953　第 73 年・正走向下一個年輪</text>
+</svg>
