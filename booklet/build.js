@@ -6,12 +6,13 @@ const {
   VerticalPositionAlign,
 } = require("docx");
 
-const EA = "微軟正黑體";
-const LAT = "Calibri";
+const SERIF = "Noto Serif CJK TC"; // 思源宋體（內文）
+const SANS = "Noto Sans CJK TC";  // 思源黑體（標題、圖說、頁眉頁碼）
 const NAVY = "1F3A4D", SEPIA = "8C6239", GOLD = "C8A356", RED = "A4432E",
       GRAY = "6E6A60", TEXT = "2B2B28";
 
-const F = { ascii: LAT, hAnsi: LAT, eastAsia: EA };
+const F = { ascii: SERIF, hAnsi: SERIF, eastAsia: SERIF };
+const FS = { ascii: SANS, hAnsi: SANS, eastAsia: SANS };
 
 function R(text, o = {}) {
   return new TextRun({ text, font: F, size: o.size ?? 19, bold: o.bold, color: o.color ?? TEXT, italics: o.i });
@@ -37,20 +38,20 @@ function H1(text, opts = {}) {
     keepNext: true,
     spacing: { before: 120, after: 240 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: GOLD, space: 6 } },
-    children: [new TextRun({ text, font: F, size: 30, bold: true, color: NAVY })],
+    children: [new TextRun({ text, font: FS, size: 30, bold: true, color: NAVY })],
   });
 }
 function H2(text) {
   return new Paragraph({
     keepNext: true,
     spacing: { before: 220, after: 130 },
-    children: [new TextRun({ text, font: F, size: 23, bold: true, color: SEPIA })],
+    children: [new TextRun({ text, font: FS, size: 23, bold: true, color: SEPIA })],
   });
 }
 function KICKER(text) { // small letterspaced label
   return new Paragraph({
     alignment: AlignmentType.CENTER, spacing: { after: 160 },
-    children: [new TextRun({ text, font: F, size: 17, color: GOLD, bold: true, characterSpacing: 60 })],
+    children: [new TextRun({ text, font: FS, size: 17, color: GOLD, bold: true, characterSpacing: 60 })],
   });
 }
 function IMG(file, wpx, hpx, caption, o = {}) {
@@ -62,7 +63,7 @@ function IMG(file, wpx, hpx, caption, o = {}) {
   })];
   if (caption) out.push(new Paragraph({
     alignment: AlignmentType.CENTER, spacing: { after: 200 },
-    children: [new TextRun({ text: caption, font: F, size: 16, color: GRAY })],
+    children: [new TextRun({ text: caption, font: FS, size: 16, color: GRAY })],
   }));
   return out;
 }
@@ -109,27 +110,27 @@ children.push(
 const tocEntries = [
   ["簡短摘要", "3"],
   ["主要發現", "5"],
-  ["一、核心對照：柯達 vs 富士", "7"],
-  ["二、超長壽企業的存活模式", "9"],
-  ["三、失敗組解剖：四種可預測的死法", "11"],
-  ["四、醫院與非營利組織的長壽機制", "13"],
-  ["五、屏基的定位與永續風險", "15"],
-  ["建議（分階段、可操作）", "17"],
-  ["注意事項（限制與存疑）", "19"],
-  ["附錄：自我檢視的診斷性問題清單", "20"],
+  ["一、核心對照：柯達 vs 富士", "8"],
+  ["二、超長壽企業的存活模式", "10"],
+  ["三、失敗組解剖：四種可預測的死法", "12"],
+  ["四、醫院與非營利組織的長壽機制", "14"],
+  ["五、屏基的定位與永續風險", "16"],
+  ["建議（分階段、可操作）", "18"],
+  ["注意事項（限制與存疑）", "20"],
+  ["附錄：自我檢視的診斷性問題清單", "21"],
 ];
 children.push(
   new Paragraph({
     pageBreakBefore: true, spacing: { before: 200, after: 260 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: GOLD, space: 6 } },
-    children: [new TextRun({ text: "目錄", font: F, size: 30, bold: true, color: NAVY })],
+    children: [new TextRun({ text: "目錄", font: FS, size: 30, bold: true, color: NAVY })],
   }),
   ...tocEntries.map(([t, p]) => new Paragraph({
     spacing: { after: 150 },
     tabStops: [{ type: TabStopType.RIGHT, position: 6570, leader: LeaderType.DOT }],
     children: [
-      new TextRun({ text: t, font: F, size: 20, color: TEXT }),
-      new TextRun({ text: "\t" + p, font: F, size: 20, color: SEPIA }),
+      new TextRun({ text: t, font: FS, size: 20, color: TEXT }),
+      new TextRun({ text: "\t" + p, font: FS, size: 20, color: SEPIA }),
     ],
   })),
   new Paragraph({ spacing: { before: 320, after: 0 }, children: [] }),
@@ -434,7 +435,7 @@ const doc = new Document({
         children: [new Paragraph({
           alignment: AlignmentType.CENTER,
           border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: GOLD, space: 4 } },
-          children: [new TextRun({ text: "永續企業治理　·　給屏東基督教醫院的線索", font: F, size: 14, color: GRAY, characterSpacing: 20 })],
+          children: [new TextRun({ text: "永續企業治理　·　給屏東基督教醫院的線索", font: FS, size: 14, color: GRAY, characterSpacing: 20 })],
         })],
       }),
       first: new Header({ children: [] }),
@@ -444,9 +445,9 @@ const doc = new Document({
         children: [new Paragraph({
           alignment: AlignmentType.CENTER,
           children: [
-            new TextRun({ text: "— ", font: F, size: 16, color: GOLD }),
-            new TextRun({ children: [PageNumber.CURRENT], font: F, size: 16, color: GRAY }),
-            new TextRun({ text: " —", font: F, size: 16, color: GOLD }),
+            new TextRun({ text: "— ", font: FS, size: 16, color: GOLD }),
+            new TextRun({ children: [PageNumber.CURRENT], font: FS, size: 16, color: GRAY }),
+            new TextRun({ text: " —", font: FS, size: 16, color: GOLD }),
           ],
         })],
       }),
