@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.second_brain/
+*.db
+*.db-wal
+*.db-shm
