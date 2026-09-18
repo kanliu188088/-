@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+    paths:
+      - "second_brain/**"
+      - "second_brain_web/**"
+      - ".github/workflows/tests.yml"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python:
+    name: Python 版單元測試
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s second_brain/tests -v
+
+  web:
+    name: 網頁版瀏覽器測試
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: 安裝 Playwright
+        working-directory: second_brain_web/tests
+        run: |
+          npm init -y >/dev/null
+          npm i playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: 執行測試
+        working-directory: second_brain_web/tests
+        run: node test_web.js

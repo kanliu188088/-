@@ -1,0 +1,65 @@
+name: Build Android APK
+
+on:
+  push:
+    paths:
+      - "second_brain_android/**"
+      - "second_brain_web/**"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 編譯 APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 設定 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: 設定 Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0"
+
+      - name: 設定 Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 編譯（debug 簽章，可直接安裝）
+        working-directory: second_brain_android
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: 整理輸出
+        run: |
+          mkdir -p out
+          cp second_brain_android/app/build/outputs/apk/debug/*.apk out/second-brain.apk
+          ls -la out
+
+      - name: 上傳 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: second-brain-apk
+          path: out/second-brain.apk
+          if-no-files-found: error
+
+      - name: 發佈到 Release（固定標籤 apk-latest）
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: apk-latest
+        run: |
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" out/second-brain.apk \
+            --target "$GITHUB_SHA" \
+            --title "第二大腦 Android APK（最新自動編譯）" \
+            --notes "由 GitHub Actions 自動編譯。commit: ${GITHUB_SHA}。安裝前請在手機允許「安裝未知來源的應用程式」。"

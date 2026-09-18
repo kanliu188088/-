@@ -4,3 +4,6 @@ __pycache__/
 *.db
 *.db-wal
 *.db-shm
+node_modules/
+second_brain_web/tests/out/
+second_brain_web/tests/package*.json
