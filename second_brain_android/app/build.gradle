@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "tw.secondbrain.app"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "tw.secondbrain.app"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    // 網頁版就是 App 的畫面：直接把 ../second_brain_web 當成 assets，不複製第二份
+    sourceSets {
+        main {
+            assets.srcDirs += ["../../second_brain_web"]
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // 用 debug 金鑰簽章，讓 CI 產出的 APK 可以直接安裝（正式上架請改成自己的 keystore）
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "second-brain-${variant.buildType.name}-${defaultConfig.versionName}.apk"
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.webkit:webkit:1.11.0"
+    implementation "androidx.core:core:1.13.1"
+}

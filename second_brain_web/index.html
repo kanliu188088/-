@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a4d">
+<title>第二大腦</title>
+<meta name="description" content="把硬碟裡的檔案收集成可搜尋的第二大腦 — 純瀏覽器版，資料只存在你的裝置。">
+<link rel="manifest" href='data:application/manifest+json,{"name":"第二大腦","short_name":"第二大腦","start_url":".","display":"standalone","background_color":"#fcfcfb","theme_color":"#1f3a4d","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231f3a4d%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2728%27 fill=%27none%27 stroke=%27%23c8a356%27 stroke-width=%278%27/%3E%3Cpath d=%27M50 22v56M22 50h56%27 stroke=%27%23c8a356%27 stroke-width=%278%27 stroke-linecap=%27round%27/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml"}]}'>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231f3a4d'/%3E%3Ccircle cx='50' cy='50' r='28' fill='none' stroke='%23c8a356' stroke-width='8'/%3E%3Cpath d='M50 22v56M22 50h56' stroke='%23c8a356' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fcfcfb; --surface: #ffffff; --surface-2: #f3f2ee; --border: #e2e0da;
+  --text: #0b0b0b; --text-2: #52514e; --text-3: #8a8880;
+  --accent: #1f3a4d; --accent-ink: #ffffff; --gold: #c8a356;
+  --link: #1c5cab; --bar: #2a78d6; --mark: #fff1a8;
+  --good: #0ca30c; --critical: #d03b3b; --warning: #fab219;
+  --radius: 10px; --shadow: 0 1px 3px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131312; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+    --text: #ffffff; --text-2: #c3c2b7; --text-3: #8b8a81;
+    --accent: #2a4d66; --accent-ink: #ffffff; --gold: #d4b46a;
+    --link: #6da7ec; --bar: #3987e5; --mark: #5a4b12;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131312; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+  --text: #ffffff; --text-2: #c3c2b7; --text-3: #8b8a81;
+  --accent: #2a4d66; --accent-ink: #ffffff; --gold: #d4b46a;
+  --link: #6da7ec; --bar: #3987e5; --mark: #5a4b12;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font: 15px/1.55 -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; min-height: 100vh; }
+a { color: var(--link); }
+button, input, select, textarea { font: inherit; color: inherit; }
+header { position: sticky; top: 0; z-index: 5; background: var(--accent); color: var(--accent-ink); padding: env(safe-area-inset-top) 16px 0; box-shadow: var(--shadow); }
+.brand { display: flex; align-items: center; gap: 10px; height: 52px; }
+.brand h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: .02em; }
+.brand .logo { width: 26px; height: 26px; border-radius: 7px; background: var(--gold); display: grid; place-items: center; color: var(--accent); font-weight: 800; font-size: 16px; }
+.brand .spacer { flex: 1; }
+.brand .count { font-size: 12px; opacity: .8; }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 12px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs button { flex: 0 0 auto; background: none; border: 0; color: var(--accent-ink); opacity: .72; padding: 8px 12px 10px; border-bottom: 3px solid transparent; cursor: pointer; }
+nav.tabs button[aria-selected="true"] { opacity: 1; border-bottom-color: var(--gold); font-weight: 600; }
+main { max-width: 980px; margin: 0 auto; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
+section[hidden] { display: none; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+.card h2 { font-size: 15px; margin: 0 0 10px; color: var(--text-2); font-weight: 600; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--text-3); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--critical); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.sm { padding: 4px 10px; font-size: 13px; }
+input[type=search], input[type=text], select, textarea { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; min-width: 0; }
+input[type=search] { flex: 1; font-size: 16px; }
+.muted { color: var(--text-3); font-size: 13px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.filters select { padding: 6px 10px; font-size: 13px; }
+.result { padding: 10px 0; border-top: 1px solid var(--border); cursor: pointer; }
+.result:first-child { border-top: 0; }
+.result .name { font-weight: 600; word-break: break-all; }
+.result .name .kind { font-weight: 400; color: var(--text-3); font-size: 12px; margin-left: 6px; }
+.result .path { color: var(--text-3); font-size: 12px; word-break: break-all; }
+.result .snip { color: var(--text-2); font-size: 13px; margin-top: 3px; word-break: break-all; }
+.result .meta { color: var(--text-3); font-size: 12px; margin-top: 2px; display: flex; gap: 12px; flex-wrap: wrap; }
+.result.missing .name { text-decoration: line-through; color: var(--text-3); }
+mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+.tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; font-size: 12px; color: var(--text-2); margin-right: 4px; }
+.tag.x { cursor: pointer; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+th { color: var(--text-2); font-weight: 600; font-size: 13px; }
+td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.path { word-break: break-all; font-size: 13px; }
+.bar { height: 8px; border-radius: 4px; background: var(--bar); min-width: 2px; }
+.barcell { width: 40%; }
+.progress { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.progress > div { height: 100%; background: var(--bar); width: 0; transition: width .2s; }
+.log { font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--text-2); max-height: 180px; overflow: auto; white-space: pre-wrap; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+.stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.tile { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.tile .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 12px; color: var(--text-2); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } .barcell { width: 30%; } }
+dialog { border: 0; border-radius: 14px; padding: 0; max-width: min(720px, calc(100vw - 32px)); width: 100%; background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+.dlg { padding: 18px 20px; }
+.dlg h3 { margin: 0 0 4px; font-size: 17px; word-break: break-all; }
+.dlg .path { color: var(--text-3); font-size: 12px; word-break: break-all; }
+.dlg .section { margin-top: 14px; }
+.dlg .section h4 { margin: 0 0 6px; font-size: 13px; color: var(--text-2); }
+.note { border-left: 3px solid var(--gold); padding: 4px 10px; margin: 6px 0; background: var(--surface-2); border-radius: 0 6px 6px 0; font-size: 14px; }
+.note .t { font-size: 11px; color: var(--text-3); }
+.preview { max-height: 220px; overflow: auto; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; font-size: 13px; white-space: pre-wrap; word-break: break-all; color: var(--text-2); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; max-width: calc(100vw - 32px); }
+.toast.show { opacity: .95; }
+.empty { color: var(--text-3); text-align: center; padding: 30px 10px; }
+.roots .r { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.roots .r:first-child { border-top: 0; }
+.roots .r .n { font-weight: 600; flex: 1; min-width: 160px; word-break: break-all; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; }
+kbd { font: 12px ui-monospace, monospace; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; }
+.hint { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text-2); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">腦</div>
+    <h1>第二大腦</h1>
+    <div class="spacer"></div>
+    <div class="count" id="hdrCount"></div>
+  </div>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="search" aria-selected="true">搜尋</button>
+    <button role="tab" data-tab="scan">掃描</button>
+    <button role="tab" data-tab="stats">統計</button>
+    <button role="tab" data-tab="dupes">重複檔</button>
+    <button role="tab" data-tab="tags">標籤與筆記</button>
+    <button role="tab" data-tab="export">匯出與備份</button>
+  </nav>
+</header>
+
+<main>
+  <!-- 搜尋 -->
+  <section id="tab-search">
+    <div class="card">
+      <form class="row" id="searchForm" autocomplete="off">
+        <input type="search" id="q" placeholder="輸入關鍵字：檔名、內文、筆記、標籤（多個字用空白分開）" enterkeyhint="search">
+        <button class="btn primary" type="submit">搜尋</button>
+      </form>
+      <div class="filters">
+        <select id="fKind"><option value="">所有類型</option></select>
+        <select id="fRoot"><option value="">所有位置</option></select>
+        <select id="fTag"><option value="">所有標籤</option></select>
+        <select id="fSort"><option value="rank">相關度</option><option value="mtime">最近修改</option><option value="size">最大檔案</option><option value="name">檔名</option></select>
+        <label class="chk muted"><input type="checkbox" id="fMissing"> 含已消失</label>
+      </div>
+    </div>
+    <div class="card" id="searchResults"><div class="empty" id="searchEmpty">尚未建立索引。到「掃描」分頁選擇一個資料夾開始。</div></div>
+  </section>
+
+  <!-- 掃描 -->
+  <section id="tab-scan" hidden>
+    <div class="card">
+      <h2>加入要收集的位置</h2>
+      <div class="row">
+        <button class="btn primary" id="btnPick">選擇資料夾並掃描</button>
+        <button class="btn" id="btnScanAll" hidden>掃描整個手機儲存空間</button>
+        <input type="file" id="pickFallback" webkitdirectory multiple hidden>
+      </div>
+      <div class="filters">
+        <label class="chk"><input type="checkbox" id="optContent" checked> 抽取內文（txt / md / docx / xlsx / pptx / 程式碼；pdf 需連網）</label>
+        <label class="chk"><input type="checkbox" id="optHidden"> 包含隱藏檔（以 . 開頭）</label>
+        <label class="chk">內文上限 <select id="optMaxMB"><option value="1">1 MB</option><option value="2" selected>2 MB</option><option value="5">5 MB</option><option value="20">20 MB</option></select></label>
+      </div>
+      <p class="hint" id="pickHint"></p>
+    </div>
+    <div class="card" id="progressCard" hidden>
+      <h2 id="progressTitle">掃描中…</h2>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="muted" id="progressText"></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" id="btnStop">停止</button></div>
+      <div class="log" id="scanLog" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2>已收集的位置</h2>
+      <div class="roots" id="rootsList"><div class="empty">尚無</div></div>
+    </div>
+  </section>
+
+  <!-- 統計 -->
+  <section id="tab-stats" hidden>
+    <div class="card"><div class="stat-tiles" id="tiles"></div></div>
+    <div class="grid2">
+      <div class="card"><h2>依類型</h2><div id="statKind"></div></div>
+      <div class="card"><h2>依修改年份</h2><div id="statYear"></div></div>
+      <div class="card"><h2>最多的副檔名</h2><div id="statExt"></div></div>
+      <div class="card"><h2>依位置</h2><div id="statRoot"></div></div>
+    </div>
+    <div class="card"><h2>最大的檔案</h2><div id="statLargest"></div></div>
+    <div class="card"><h2>檔案最多的資料夾</h2><div id="statDirs"></div></div>
+  </section>
+
+  <!-- 重複檔 -->
+  <section id="tab-dupes" hidden>
+    <div class="card">
+      <div class="row">
+        <button class="btn primary" id="btnDupes">找出重複檔案</button>
+        <label class="chk">只比對大於 <select id="dupMin"><option value="0">0</option><option value="102400">100 KB</option><option value="1048576" selected>1 MB</option><option value="10485760">10 MB</option></select></label>
+        <span class="muted" id="dupStatus"></span>
+      </div>
+      <p class="muted">先依大小分組，再對候選檔案計算 SHA-256，只有內容完全相同才算重複。</p>
+    </div>
+    <div id="dupResults"></div>
+  </section>
+
+  <!-- 標籤與筆記 -->
+  <section id="tab-tags" hidden>
+    <div class="card"><h2>標籤</h2><div id="tagCloud" class="row"><span class="muted">尚無標籤。在搜尋結果點一個檔案就能加標籤。</span></div></div>
+    <div class="card"><h2>最近的筆記</h2><div id="recentNotes"><span class="muted">尚無筆記。</span></div></div>
+  </section>
+
+  <!-- 匯出 -->
+  <section id="tab-export" hidden>
+    <div class="card">
+      <h2>匯出 Markdown 索引</h2>
+      <p class="muted">產生一份可用 Obsidian / Typora 開啟的 Markdown 檔，內含依類型、依年份、依資料夾、標籤、筆記與重複檔清單。</p>
+      <div class="row"><button class="btn primary" id="btnExportMd">下載 Markdown</button></div>
+    </div>
+    <div class="card">
+      <h2>備份與還原</h2>
+      <p class="muted">JSON 備份包含所有檔案紀錄、標籤、筆記（可選擇是否含內文）。還原時會合併到目前資料庫。</p>
+      <div class="row">
+        <button class="btn" id="btnBackup">下載 JSON 備份</button>
+        <label class="chk muted"><input type="checkbox" id="optBackupText" checked> 含內文</label>
+        <button class="btn" id="btnRestore">還原 JSON</button>
+        <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+      </div>
+    </div>
+    <div class="card">
+      <h2>資料</h2>
+      <p class="muted" id="dbInfo"></p>
+      <div class="row">
+        <button class="btn" id="btnRebuild">重建搜尋索引</button>
+        <button class="btn danger" id="btnClear">清除全部資料</button>
+        <button class="btn" id="btnTheme">切換深/淺色</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>關於</h2>
+      <p class="muted">第二大腦 網頁版 1.0。所有資料存在瀏覽器的 IndexedDB，不會離開你的裝置。桌面電腦建議用 Chrome / Edge 開啟（支援直接讀取資料夾）；Android 請安裝 APK 版以掃描整個儲存空間。</p>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =========================================================================
+ * 第二大腦 網頁版 — 單一 HTML 檔，純前端，不需伺服器
+ * 架構：Sources（資料夾來源：瀏覽器 / Android 橋接 / 記憶體）→ Scanner → IndexedDB
+ *       + 記憶體倒排索引（中文逐字 + 二字詞、英文單字前綴）
+ * ========================================================================= */
+
+const VERSION = '1.0.0';
+const CJK = '\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff';
+const CJK_RUN = new RegExp(`[${CJK}]+`, 'gu');
+const CJK_TEST = new RegExp(`[${CJK}]`, 'u');
+const SPLIT_RE = /[^\p{L}\p{N}_]+/u;
+
+const EXCLUDE_DIRS = new Set(['$recycle.bin', 'system volume information', 'windows', 'program files', 'program files (x86)',
+  'programdata', 'appdata', '$windows.~bt', 'recovery', 'perflogs', 'windows.old', 'node_modules', '.git', '.svn', '__pycache__',
+  '.venv', 'venv', '.cache', '.npm', '.gradle', 'site-packages', '.trash', '.trashes', '.spotlight-v100', '.fseventsd', 'caches',
+  'android', 'lost.dir', '.thumbnails', 'thumbnails', '.second_brain']);
+const EXCLUDE_EXTS = new Set(['.tmp', '.temp', '.lnk', '.ds_store', '.db-journal', '.pyc', '.nomedia']);
+const TEXT_EXTS = new Set(['.txt', '.md', '.markdown', '.rst', '.csv', '.tsv', '.json', '.xml', '.yaml', '.yml', '.toml', '.ini', '.cfg',
+  '.conf', '.log', '.html', '.htm', '.css', '.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.c', '.h', '.cpp', '.hpp', '.cs', '.go', '.rs',
+  '.rb', '.php', '.sh', '.bat', '.ps1', '.sql', '.r', '.swift', '.kt', '.tex', '.bib', '.srt', '.vtt', '.opml', '.eml', '.ics', '.vcf', '.org']);
+const OFFICE_EXTS = new Set(['.docx', '.xlsx', '.pptx', '.odt', '.ods', '.odp']);
+const PDF_EXTS = new Set(['.pdf']);
+const KINDS = {
+  '文件': ['.doc', '.docx', '.odt', '.rtf', '.pdf', '.txt', '.md', '.pages', '.tex', '.epub'],
+  '簡報': ['.ppt', '.pptx', '.odp', '.key'],
+  '試算表': ['.xls', '.xlsx', '.xlsm', '.ods', '.csv', '.tsv', '.numbers'],
+  '圖片': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tif', '.tiff', '.webp', '.heic', '.svg', '.psd', '.ai', '.raw', '.dng'],
+  '影片': ['.mp4', '.mov', '.avi', '.mkv', '.wmv', '.flv', '.m4v', '.webm', '.mts', '.3gp'],
+  '音訊': ['.mp3', '.wav', '.flac', '.aac', '.m4a', '.ogg', '.wma', '.amr', '.opus'],
+  '壓縮檔': ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz', '.iso'],
+  '程式碼': ['.py', '.js', '.ts', '.java', '.c', '.cpp', '.h', '.cs', '.go', '.rs', '.rb', '.php', '.sh', '.bat', '.ps1', '.sql', '.html', '.css', '.json', '.xml', '.yaml', '.yml', '.kt'],
+  '執行檔': ['.exe', '.msi', '.dmg', '.pkg', '.app', '.apk', '.deb', '.rpm'],
+};
+const EXT_KIND = {};
+for (const [k, exts] of Object.entries(KINDS)) for (const e of exts) EXT_KIND[e] = k;
+const kindOf = ext => EXT_KIND[ext] || '其它';
+const MAX_TEXT_CHARS = 100000;
+
+/* ---------------- 小工具 ---------------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtSize = n => { if (n == null) return ''; const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0; while (n >= 1024 && i < 4) { n /= 1024; i++; } return (i ? n.toFixed(1) : n) + ' ' + u[i]; };
+const fmtDate = t => { if (!t) return ''; const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+const extOf = name => { const i = name.lastIndexOf('.'); return i > 0 ? name.slice(i).toLowerCase() : ''; };
+const norm = s => (s || '').normalize('NFKC').toLowerCase();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let toastTimer;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+function download(name, data, type) {
+  const blob = data instanceof Blob ? data : new Blob([data], { type: type || 'application/octet-stream' });
+  if (window.Android && Android.saveFile) { // Android WebView 無法直接下載 blob
+    blob.text().then(t => Android.saveFile(name, t, blob.type)); return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+/* ---------------- 斷詞 / 索引 ---------------- */
+function tokenize(text) {
+  const out = new Set();
+  const n = norm(text).replace(CJK_RUN, m => ` ${m} `);
+  for (const piece of n.split(SPLIT_RE)) {
+    if (!piece) continue;
+    if (CJK_TEST.test(piece)) {
+      const chars = Array.from(piece);
+      for (let i = 0; i < chars.length; i++) { out.add(chars[i]); if (i + 1 < chars.length) out.add(chars[i] + chars[i + 1]); }
+    } else if (piece.length <= 40) out.add(piece);
+  }
+  return out;
+}
+function docTextForIndex(rec) {
+  return [rec.name, rec.path.replace(/[\\/]+/g, ' '), rec.text || '', (rec.notes || []).map(n => n.text).join(' '), (rec.tags || []).join(' ')].join(' ');
+}
+
+class InvertedIndex {
+  constructor() { this.map = new Map(); this.dirty = new Set(); this.sorted = null; }
+  add(id, tokens) { for (const t of tokens) { let a = this.map.get(t); if (!a) { a = []; this.map.set(t, a); this.sorted = null; } if (a[a.length - 1] !== id && !a.includes(id)) a.push(id); this.dirty.add(t[0]); } }
+  remove(id, tokens) { for (const t of tokens) { const a = this.map.get(t); if (!a) continue; const i = a.indexOf(id); if (i >= 0) { a.splice(i, 1); this.dirty.add(t[0]); if (!a.length) { this.map.delete(t); this.sorted = null; } } } }
+  get(t) { return this.map.get(t) || []; }
+  prefix(p, cap = 3000) {
+    if (!this.sorted) this.sorted = Array.from(this.map.keys()).sort();
+    const s = this.sorted; let lo = 0, hi = s.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (s[m] < p) lo = m + 1; else hi = m; }
+    const ids = new Set();
+    for (let i = lo; i < s.length && s[i].startsWith(p) && i - lo < cap; i++) for (const id of this.map.get(s[i])) ids.add(id);
+    return ids;
+  }
+  async flush(db) {
+    if (!this.dirty.size) return;
+    const shards = new Map();
+    for (const [t, ids] of this.map) { const k = t[0]; if (this.dirty.has(k)) { let o = shards.get(k); if (!o) { o = {}; shards.set(k, o); } o[t] = ids; } }
+    const tx = db.tx('postings', 'readwrite'); const st = tx.objectStore('postings');
+    for (const k of this.dirty) { const o = shards.get(k); if (o) st.put({ shard: k, t: o }); else st.delete(k); }
+    await db.done(tx); this.dirty.clear();
+  }
+  async load(db) {
+    this.map = new Map(); this.sorted = null;
+    const rows = await db.getAll('postings');
+    for (const r of rows) for (const [t, ids] of Object.entries(r.t)) this.map.set(t, ids);
+  }
+  async rebuild(db) {
+    this.map = new Map(); this.sorted = null; this.dirty = new Set();
+    await db.iterate('files', rec => { if (rec.present !== false) this.add(rec.id, tokenize(docTextForIndex(rec))); });
+    await db.clear('postings');
+    for (const t of this.map.keys()) this.dirty.add(t[0]);
+    await this.flush(db);
+  }
+}
+
+/* ---------------- IndexedDB ---------------- */
+class DB {
+  async open() {
+    this.db = await new Promise((res, rej) => {
+      const req = indexedDB.open('second_brain', 1);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        const f = d.createObjectStore('files', { keyPath: 'id', autoIncrement: true });
+        f.createIndex('path', 'path', { unique: true }); f.createIndex('root', 'root'); f.createIndex('size', 'size');
+        d.createObjectStore('roots', { keyPath: 'id', autoIncrement: true });
+        d.createObjectStore('postings', { keyPath: 'shard' });
+        d.createObjectStore('meta', { keyPath: 'key' });
+      };
+      req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error);
+    });
+  }
+  tx(store, mode = 'readonly') { return this.db.transaction(store, mode); }
+  done(tx) { return new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }); }
+  req(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+  get(store, key) { return this.req(this.tx(store).objectStore(store).get(key)); }
+  getAll(store) { return this.req(this.tx(store).objectStore(store).getAll()); }
+  async put(store, val) { const tx = this.tx(store, 'readwrite'); const k = await this.req(tx.objectStore(store).put(val)); await this.done(tx); return k; }
+  async putMany(store, vals) { const tx = this.tx(store, 'readwrite'); const st = tx.objectStore(store); const keys = vals.map(v => this.req(st.put(v))); await this.done(tx); return Promise.all(keys); }
+  async del(store, key) { const tx = this.tx(store, 'readwrite'); tx.objectStore(store).delete(key); await this.done(tx); }
+  async clear(store) { const tx = this.tx(store, 'readwrite'); tx.objectStore(store).clear(); await this.done(tx); }
+  iterate(store, cb, index, range) {
+    return new Promise((res, rej) => {
+      const src = this.tx(store).objectStore(store); const cur = (index ? src.index(index) : src).openCursor(range);
+      cur.onsuccess = () => { const c = cur.result; if (!c) return res(); cb(c.value); c.continue(); }; cur.onerror = () => rej(cur.error);
+    });
+  }
+  getByPath(path) { return this.req(this.tx('files').objectStore('files').index('path').get(path)); }
+}
+
+/* ---------------- 內文抽取 ---------------- */
+function decodeText(bytes) {
+  for (const enc of ['utf-8', 'big5', 'gb18030', 'shift_jis', 'utf-16le']) {
+    try { return new TextDecoder(enc, { fatal: true }).decode(bytes); } catch (e) { /* 下一個 */ }
+  }
+  return new TextDecoder('utf-8').decode(bytes);
+}
+async function inflateRaw(bytes) {
+  const ds = new DecompressionStream('deflate-raw');
+  return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer());
+}
+/** 迷你 zip 讀取器：只解出 predicate 命中的檔案 */
+async function unzip(bytes, predicate) {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('not a zip');
+  const count = dv.getUint16(eocd + 10, true), cdOff = dv.getUint32(eocd + 16, true);
+  const out = new Map(); let p = cdOff; const td = new TextDecoder();
+  for (let i = 0; i < count && p + 46 <= bytes.length; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nlen = dv.getUint16(p + 28, true),
+      elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), lho = dv.getUint32(p + 42, true);
+    const name = td.decode(bytes.subarray(p + 46, p + 46 + nlen));
+    p += 46 + nlen + elen + clen;
+    if (!predicate(name)) continue;
+    const ln = dv.getUint16(lho + 26, true), le = dv.getUint16(lho + 28, true), start = lho + 30 + ln + le;
+    const data = bytes.subarray(start, start + csize);
+    out.set(name, method === 8 ? await inflateRaw(data) : method === 0 ? data : new Uint8Array());
+  }
+  return out;
+}
+function xmlToText(bytes) {
+  let s = new TextDecoder().decode(bytes);
+  s = s.replace(/<\/(w:p|a:p|text:p|table:table-cell|w:tab|si|t)>|<w:br[^>]*\/>|<text:line-break[^>]*\/>/g, ' ');
+  s = s.replace(/<[^>]+>/g, '');
+  const ta = document.createElement('textarea'); ta.innerHTML = s; return ta.value;
+}
+async function officeText(bytes, ext) {
+  const pick = n => {
+    if (ext === '.docx') return /^word\/(document|header\d*|footer\d*|footnotes)\.xml$/.test(n);
+    if (ext === '.xlsx') return n === 'xl/sharedStrings.xml' || /^xl\/worksheets\/sheet\d+\.xml$/.test(n);
+    if (ext === '.pptx') return /^ppt\/(slides|notesSlides)\/[^/]+\.xml$/.test(n);
+    return n === 'content.xml';
+  };
+  const files = await unzip(bytes, n => pick(n) || n === 'docProps/core.xml' || n === 'meta.xml');
+  return Array.from(files.values()).map(xmlToText).join('\n');
+}
+let pdfjsPromise = null;
+function loadPdfjs() {
+  if (!pdfjsPromise) pdfjsPromise = (async () => {
+    const base = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/';
+    const lib = await import(base + 'pdf.min.mjs');
+    lib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.mjs';
+    return lib;
+  })().catch(e => { console.warn('pdf.js 無法載入（離線？）', e); return null; });
+  return pdfjsPromise;
+}
+async function pdfText(bytes) {
+  const lib = await loadPdfjs(); if (!lib) return '';
+  const doc = await lib.getDocument({ data: bytes, useSystemFonts: true, isEvalSupported: false }).promise;
+  let out = ''; const pages = Math.min(doc.numPages, 200);
+  for (let i = 1; i <= pages && out.length < MAX_TEXT_CHARS; i++) {
+    const page = await doc.getPage(i); const c = await page.getTextContent();
+    out += c.items.map(it => it.str).join(' ') + '\n';
+  }
+  doc.destroy(); return out;
+}
+async function extractText(entry, ext, maxBytes) {
+  try {
+    let text = '';
+    if (TEXT_EXTS.has(ext)) {
+      if (entry.size > maxBytes) return '';
+      const b = await entry.bytes(maxBytes); if (!b) return '';
+      for (let i = 0; i < Math.min(b.length, 4096); i++) if (b[i] === 0) return '';
+      text = decodeText(b);
+    } else if (OFFICE_EXTS.has(ext)) {
+      if (entry.size > maxBytes * 25) return '';
+      const b = await entry.bytes(); if (!b) return ''; text = await officeText(b, ext);
+    } else if (PDF_EXTS.has(ext)) {
+      if (entry.size > maxBytes * 50) return '';
+      const b = await entry.bytes(); if (!b) return ''; text = await pdfText(b);
+    } else return '';
+    return text.replace(/[ \t\r\f\v]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim().slice(0, MAX_TEXT_CHARS);
+  } catch (e) { console.warn('抽取失敗', entry.path, e); return ''; }
+}
+const b64ToBytes = s => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+
+/* ---------------- 檔案來源 ---------------- */
+const isAndroid = () => !!(window.Android && typeof Android.scan === 'function');
+
+function skipDir(name, hidden) { return EXCLUDE_DIRS.has(name.toLowerCase()) || (!hidden && name.startsWith('.')); }
+function skipFile(name, hidden) { return EXCLUDE_EXTS.has(extOf(name)) || (!hidden && name.startsWith('.')); }
+
+/** Chrome / Edge 的 File System Access API */
+const fsaSource = {
+  async *walk(root, opts) {
+    const stack = [[root.handle, root.label]];
+    while (stack.length) {
+      const [dir, prefix] = stack.pop();
+      let it;
+      try { it = dir.entries(); } catch (e) { continue; }
+      try {
+        for await (const [name, h] of it) {
+          if (h.kind === 'directory') { if (!skipDir(name, opts.hidden)) stack.push([h, prefix + '/' + name]); continue; }
+          if (skipFile(name, opts.hidden)) continue;
+          let f; try { f = await h.getFile(); } catch (e) { continue; }
+          yield { path: prefix + '/' + name, name, size: f.size, mtime: f.lastModified, bytes: async max => new Uint8Array(await (max ? f.slice(0, max) : f).arrayBuffer()), file: f };
+        }
+      } catch (e) { console.warn('讀取資料夾失敗', prefix, e); }
+    }
+  },
+  async file(root, rec) {
+    const parts = rec.path.slice(root.label.length + 1).split('/');
+    let d = root.handle;
+    for (const p of parts.slice(0, -1)) d = await d.getDirectoryHandle(p);
+    return (await d.getFileHandle(parts[parts.length - 1])).getFile();
+  },
+};
+/** <input webkitdirectory> 後援（Firefox / Safari）：只在本次工作階段內可讀 */
+const sessionFiles = new Map();
+const inputSource = {
+  async *walk(root, opts) {
+    for (const f of root.files) {
+      const rel = f.webkitRelativePath || f.name; const segs = rel.split('/');
+      if (segs.slice(1, -1).some(s => skipDir(s, opts.hidden)) || skipFile(f.name, opts.hidden)) continue;
+      const path = rel; sessionFiles.set(path, f);
+      yield { path, name: f.name, size: f.size, mtime: f.lastModified, bytes: async max => new Uint8Array(await (max ? f.slice(0, max) : f).arrayBuffer()), file: f };
+    }
+  },
+  async file(root, rec) { const f = sessionFiles.get(rec.path); if (!f) throw new Error('這個資料夾是用後援模式匯入的，重新整理後需要重新選擇才能開啟檔案'); return f; },
+};
+/** Android APK 的 JavaScript 橋接：Java 端走檔案系統，批次回傳 JSON */
+const androidSource = {
+  pending: new Map(),
+  async *walk(root, opts) {
+    const token = 't' + Date.now() + Math.random().toString(36).slice(2);
+    const queue = []; let done = false, error = null, wake = null;
+    this.pending.set(token, {
+      files: arr => { for (const f of arr) queue.push(f); if (wake) { wake(); wake = null; } },
+      done: () => { done = true; if (wake) { wake(); wake = null; } },
+      error: msg => { error = msg; done = true; if (wake) { wake(); wake = null; } },
+    });
+    Android.scan(token, root.srcId, !!opts.hidden);
+    try {
+      while (true) {
+        if (!queue.length) { if (done) break; await new Promise(r => { wake = r; }); continue; }
+        const f = queue.shift();
+        if (skipFile(f.name, opts.hidden)) continue;
+        const rel = f.rel || f.name;
+        if (rel.split('/').slice(0, -1).some(s => skipDir(s, opts.hidden))) continue;
+        yield { path: root.label + '/' + rel, name: f.name, size: f.size, mtime: f.mtime, srcId: f.id, bytes: async max => { const s = Android.readBase64(f.id, max || 0); return s ? b64ToBytes(s) : null; } };
+      }
+      if (error) throw new Error(error);
+    } finally { this.pending.delete(token); }
+  },
+  async file(root, rec) { const s = Android.readBase64(rec.srcId, 0); if (!s) throw new Error('讀取失敗'); return new File([b64ToBytes(s)], rec.name); },
+};
+window.sbAndroid = {
+  onFiles: (token, json) => { const p = androidSource.pending.get(token); if (p) p.files(typeof json === 'string' ? JSON.parse(json) : json); },
+  onDone: token => { const p = androidSource.pending.get(token); if (p) p.done(); },
+  onError: (token, msg) => { const p = androidSource.pending.get(token); if (p) p.error(msg); },
+  onPicked: (srcId, label) => { app.addRoot({ kind: 'android', srcId, label }).then(r => app.scan(r)); },
+};
+/** 記憶體來源（測試 / 還原用） */
+const memorySource = {
+  async *walk(root, opts) {
+    for (const f of root.entries) {
+      if (f.path.split('/').slice(1, -1).some(s => skipDir(s, opts.hidden)) || skipFile(f.name, opts.hidden)) continue;
+      yield { ...f, bytes: async max => (max ? f.data.subarray(0, max) : f.data) };
+    }
+  },
+  async file(root, rec) { const f = root.entries.find(e => e.path === rec.path); if (!f) throw new Error('not found'); return new File([f.data], rec.name); },
+};
+const SOURCES = { fsa: fsaSource, input: inputSource, android: androidSource, memory: memorySource };
+
+/* ---------------- 主程式 ---------------- */
+const app = {
+  db: new DB(), index: new InvertedIndex(), roots: [], meta: new Map(), stopFlag: false, scanning: false,
+
+  async init() {
+    await this.db.open();
+    this.roots = await this.db.getAll('roots');
+    await this.index.load(this.db);
+    await this.loadMeta();
+    if (this.meta.size && !this.index.map.size) { toast('重建搜尋索引…'); await this.index.rebuild(this.db); }
+    this.bindUI(); this.renderRoots(); this.refreshFilters(); this.updateHeader();
+    if (location.hash) this.showTab(location.hash.slice(1));
+  },
+  async loadMeta() {
+    this.meta = new Map();
+    await this.db.iterate('files', r => this.meta.set(r.id, this.slim(r)));
+  },
+  slim(r) { const { text, ...rest } = r; rest.hasText = !!(text && text.length); return rest; },
+
+  /* ---- 位置 ---- */
+  async addRoot(root) {
+    const existing = this.roots.find(r => r.label === root.label && r.kind === root.kind);
+    if (existing) { Object.assign(existing, root); await this.db.put('roots', existing); return existing; }
+    root.added = Date.now(); root.id = await this.db.put('roots', root);
+    this.roots.push(root); this.renderRoots(); this.refreshFilters(); return root;
+  },
+  async removeRoot(root) {
+    if (!confirm(`要移除「${root.label}」及其 ${this.countRoot(root.id)} 筆紀錄嗎？（不會刪除實際檔案）`)) return;
+    const ids = []; for (const m of this.meta.values()) if (m.root === root.id) ids.push(m.id);
+    for (const id of ids) { const rec = await this.db.get('files', id); if (rec) this.index.remove(id, tokenize(docTextForIndex(rec))); this.meta.delete(id); }
+    const tx = this.db.tx('files', 'readwrite'); for (const id of ids) tx.objectStore('files').delete(id); await this.db.done(tx);
+    await this.db.del('roots', root.id); this.roots = this.roots.filter(r => r.id !== root.id);
+    await this.index.flush(this.db); this.renderRoots(); this.refreshFilters(); this.updateHeader(); toast('已移除');
+  },
+  countRoot(id) { let n = 0; for (const m of this.meta.values()) if (m.root === id && m.present !== false) n++; return n; },
+
+  async pickFolder() {
+    if (isAndroid()) { Android.pickFolder(); return; }
+    if (window.showDirectoryPicker) {
+      let handle; try { handle = await showDirectoryPicker({ mode: 'read' }); } catch (e) { return; }
+      const root = await this.addRoot({ kind: 'fsa', label: handle.name, handle });
+      await this.scan(root);
+    } else $('#pickFallback').click();
+  },
+  async pickFallback(files) {
+    if (!files.length) return;
+    const label = (files[0].webkitRelativePath || files[0].name).split('/')[0];
+    const root = await this.addRoot({ kind: 'input', label });
+    root.files = Array.from(files);
+    await this.scan(root);
+  },
+  async ensurePermission(root) {
+    if (root.kind === 'fsa') {
+      let p = await root.handle.queryPermission({ mode: 'read' });
+      if (p !== 'granted') p = await root.handle.requestPermission({ mode: 'read' });
+      return p === 'granted';
+    }
+    if (root.kind === 'input' && !root.files) { toast('後援模式無法重新掃描，請重新選擇資料夾'); return false; }
+    return true;
+  },
+
+  /* ---- 掃描 ---- */
+  async scan(root) {
+    if (this.scanning) { toast('已有掃描在進行中'); return; }
+    if (!(await this.ensurePermission(root))) return;
+    this.scanning = true; this.stopFlag = false; this.showTab('scan');
+    const opts = { content: $('#optContent').checked, hidden: $('#optHidden').checked, maxBytes: +$('#optMaxMB').value * 1048576 };
+    const card = $('#progressCard'); card.hidden = false; const logEl = $('#scanLog'); logEl.textContent = '';
+    const log = m => { logEl.textContent += m + '\n'; logEl.scrollTop = logEl.scrollHeight; };
+    $('#progressTitle').textContent = `掃描中：${root.label}`; $('#progressBar').style.width = '0';
+    const t0 = Date.now(); let seen = 0, added = 0, updated = 0, withText = 0, removed = 0;
+    const existing = new Map(); for (const m of this.meta.values()) if (m.root === root.id) existing.set(m.path, m);
+    const seenPaths = new Set(); let batch = []; let lastUI = 0;
+    const flushBatch = async () => {
+      if (!batch.length) return;
+      const keys = await this.db.putMany('files', batch);
+      batch.forEach((rec, i) => { rec.id = keys[i]; this.index.add(rec.id, rec._tokens); delete rec._tokens; this.meta.set(rec.id, this.slim(rec)); });
+      batch = [];
+    };
+    try {
+      for await (const entry of SOURCES[root.kind].walk(root, opts)) {
+        if (this.stopFlag) break;
+        seen++; seenPaths.add(entry.path);
+        const ext = extOf(entry.name); const old = existing.get(entry.path);
+        const changed = !old || old.size !== entry.size || Math.abs((old.mtime || 0) - (entry.mtime || 0)) > 1500;
+        const wantText = opts.content && (TEXT_EXTS.has(ext) || OFFICE_EXTS.has(ext) || PDF_EXTS.has(ext));
+        if (old && !changed && (!wantText || old.hasText)) {
+          if (old.present === false) { const rec = await this.db.get('files', old.id); rec.present = true; rec.lastSeen = Date.now(); batch.push(this.withTokens(rec, old.id)); }
+          continue;
+        }
+        let rec;
+        if (old) {
+          rec = await this.db.get('files', old.id);
+          if (rec.text) this.index.remove(rec.id, tokenize(docTextForIndex(rec))); else this.index.remove(rec.id, tokenize(docTextForIndex(rec)));
+          Object.assign(rec, { size: entry.size, mtime: entry.mtime, present: true, lastSeen: Date.now(), srcId: entry.srcId || rec.srcId, hash: changed ? null : rec.hash });
+          updated++;
+        } else {
+          rec = { root: root.id, path: entry.path, dir: entry.path.slice(0, entry.path.lastIndexOf('/')), name: entry.name, ext, kind: kindOf(ext), size: entry.size, mtime: entry.mtime,
+            text: '', hash: null, tags: [], notes: [], present: true, firstSeen: Date.now(), lastSeen: Date.now(), srcId: entry.srcId || null };
+          added++;
+        }
+        if (wantText) { rec.text = await extractText(entry, ext, opts.maxBytes); if (rec.text) withText++; }
+        rec._tokens = tokenize(docTextForIndex(rec));
+        if (rec.id) { this.index.add(rec.id, rec._tokens); delete rec._tokens; await this.db.put('files', rec); this.meta.set(rec.id, this.slim(rec)); }
+        else batch.push(rec);
+        if (batch.length >= 100) await flushBatch();
+        if (Date.now() - lastUI > 150) {
+          lastUI = Date.now();
+          $('#progressText').textContent = `已看過 ${seen.toLocaleString()} 個檔案　新增 ${added.toLocaleString()}　更新 ${updated.toLocaleString()}　有內文 ${withText.toLocaleString()}`;
+          $('#progressBar').style.width = (30 + 60 * (1 - Math.exp(-seen / 5000))) + '%';
+          if (seen % 500 === 0) log(`… ${seen.toLocaleString()}：${entry.path.slice(0, 90)}`);
+          await sleep(0);
+        }
+      }
+      await flushBatch();
+      if (!this.stopFlag) {
+        for (const [path, m] of existing) if (!seenPaths.has(path) && m.present !== false) {
+          const rec = await this.db.get('files', m.id); if (!rec) continue; rec.present = false; await this.db.put('files', rec); this.meta.set(rec.id, this.slim(rec)); removed++;
+        }
+      }
+      root.lastScan = Date.now(); root.files = root.kind === 'input' ? root.files : undefined;
+      const toSave = { ...root }; delete toSave.files; delete toSave.entries; await this.db.put('roots', toSave);
+      await this.index.flush(this.db);
+      const secs = ((Date.now() - t0) / 1000).toFixed(1);
+      log(`${this.stopFlag ? '已停止' : '完成'}！${secs} 秒　看過 ${seen}　新增 ${added}　更新 ${updated}　消失 ${removed}　有內文 ${withText}`);
+      $('#progressTitle').textContent = `${this.stopFlag ? '已停止' : '完成'}：${root.label}`; $('#progressBar').style.width = '100%';
+      toast(`掃描完成：${added + updated} 筆新增/更新`);
+    } catch (e) { console.error(e); log('錯誤：' + (e.message || e)); toast('掃描發生錯誤：' + (e.message || e)); }
+    finally { this.scanning = false; this.renderRoots(); this.refreshFilters(); this.updateHeader(); }
+  },
+  withTokens(rec, id) { rec._tokens = tokenize(docTextForIndex(rec)); rec.id = id; return rec; },
+
+  /* ---- 搜尋 ---- */
+  async search(q, f = {}) {
+    const terms = norm(q).trim().split(/\s+/).filter(Boolean);
+    let cand = null;
+    if (terms.length) {
+      for (const term of terms) {
+        let termSet = null;
+        const pieces = term.replace(CJK_RUN, m => ` ${m} `).split(SPLIT_RE).filter(Boolean);
+        if (!pieces.length) continue;
+        for (const piece of pieces) {
+          let s;
+          if (CJK_TEST.test(piece)) {
+            const chars = Array.from(piece);
+            if (chars.length === 1) s = new Set(this.index.get(chars[0]));
+            else { s = null; for (let i = 0; i + 1 < chars.length; i++) { const ids = new Set(this.index.get(chars[i] + chars[i + 1])); s = s ? new Set([...s].filter(x => ids.has(x))) : ids; if (!s.size) break; } }
+          } else s = this.index.prefix(piece);
+          termSet = termSet ? new Set([...termSet].filter(x => s.has(x))) : s;
+          if (!termSet.size) break;
+        }
+        cand = cand ? new Set([...cand].filter(x => termSet.has(x))) : termSet;
+        if (!cand.size) break;
+      }
+    }
+    let ids = cand ? [...cand] : [...this.meta.keys()];
+    ids = ids.filter(id => { const m = this.meta.get(id); if (!m) return false;
+      if (!f.missing && m.present === false) return false;
+      if (f.kind && m.kind !== f.kind) return false; if (f.root && m.root !== +f.root) return false;
+      if (f.tag && !(m.tags || []).includes(f.tag)) return false; return true; });
+    if (!terms.length) { // 無關鍵字：列出最近修改
+      ids.sort((a, b) => (this.meta.get(b).mtime || 0) - (this.meta.get(a).mtime || 0));
+      return { total: ids.length, results: ids.slice(0, f.limit || 100).map(id => ({ m: this.meta.get(id), score: 0, snippet: '' })) };
+    }
+    const results = [];
+    for (const id of ids.slice(0, 3000)) {
+      const rec = await this.db.get('files', id); if (!rec) continue;
+      const hayName = norm(rec.name), hayPath = norm(rec.path), hayText = norm(rec.text || ''), hayNotes = norm((rec.notes || []).map(n => n.text).join(' ') + ' ' + (rec.tags || []).join(' '));
+      let score = 0, ok = true, firstPos = -1;
+      for (const term of terms) {
+        const inName = hayName.includes(term), inPath = hayPath.includes(term), pos = hayText.indexOf(term), inNotes = hayNotes.includes(term);
+        if (!inName && !inPath && pos < 0 && !inNotes) { ok = false; break; }
+        if (inName) score += 20; if (inPath) score += 4; if (inNotes) score += 12;
+        if (pos >= 0) { score += 5; if (firstPos < 0 || pos < firstPos) firstPos = pos; let c = 0, p = pos; while (p >= 0 && c < 20) { c++; p = hayText.indexOf(term, p + 1); } score += Math.min(c, 20) * 0.5; }
+      }
+      if (!ok) continue;
+      score += Math.max(0, 3 - (Date.now() - (rec.mtime || 0)) / (365 * 864e5));
+      let snippet = '';
+      if (firstPos >= 0) { const s = Math.max(0, firstPos - 60), e = Math.min(rec.text.length, firstPos + 120); snippet = (s ? '…' : '') + rec.text.slice(s, e).replace(/\s+/g, ' ') + (e < rec.text.length ? '…' : ''); }
+      results.push({ m: this.meta.get(id), score, snippet });
+    }
+    const sort = f.sort || 'rank';
+    results.sort((a, b) => sort === 'mtime' ? (b.m.mtime || 0) - (a.m.mtime || 0) : sort === 'size' ? b.m.size - a.m.size : sort === 'name' ? a.m.name.localeCompare(b.m.name, 'zh-Hant') : b.score - a.score);
+    return { total: results.length, results: results.slice(0, f.limit || 100), terms };
+  },
+  highlight(text, terms) {
+    text = String(text ?? '');
+    if (!terms || !terms.length) return esc(text);
+    // 逐字正規化並記住每個正規化字元對應的原始位置，NFKC 改變長度（如「…」→「...」）也能正確標記
+    let low = ''; const map = [];
+    for (let i = 0; i < text.length; i++) { const n = norm(text[i]); low += n; for (let k = 0; k < n.length; k++) map.push(i); }
+    map.push(text.length);
+    const spans = [];
+    for (const t of terms) { let p = 0; while ((p = low.indexOf(t, p)) >= 0) { spans.push([map[p], map[p + t.length - 1] + 1]); p += t.length; } }
+    spans.sort((a, b) => a[0] - b[0]);
+    let out = '', i = 0;
+    for (const [s, e] of spans) { if (s < i) continue; out += esc(text.slice(i, s)) + '<mark>' + esc(text.slice(s, e)) + '</mark>'; i = e; }
+    return out + esc(text.slice(i));
+  },
+  async runSearch() {
+    const q = $('#q').value; const f = { kind: $('#fKind').value, root: $('#fRoot').value, tag: $('#fTag').value, sort: $('#fSort').value, missing: $('#fMissing').checked, limit: 100 };
+    location.hash = 'search';
+    const { total, results, terms } = await this.search(q, f);
+    const box = $('#searchResults');
+    if (!results.length) { box.innerHTML = `<div class="empty">${this.meta.size ? '沒有符合的結果' : '尚未建立索引。到「掃描」分頁選擇一個資料夾開始。'}</div>`; return; }
+    box.innerHTML = `<div class="muted" style="margin-bottom:6px">${q.trim() ? `找到 ${total.toLocaleString()} 筆` : `最近修改的檔案（共 ${total.toLocaleString()} 筆）`}${total > results.length ? `，顯示前 ${results.length} 筆` : ''}</div>` +
+      results.map(r => this.resultHTML(r.m, r.snippet, terms)).join('');
+  },
+  resultHTML(m, snippet, terms) {
+    const root = this.roots.find(r => r.id === m.root);
+    return `<div class="result ${m.present === false ? 'missing' : ''}" data-id="${m.id}">
+      <div class="name">${this.highlight(m.name, terms)}<span class="kind">${esc(m.kind)}${m.present === false ? ' · 已消失' : ''}</span></div>
+      <div class="path">${this.highlight(m.path, terms)}</div>
+      ${snippet ? `<div class="snip">${this.highlight(snippet, terms)}</div>` : ''}
+      <div class="meta"><span>${fmtDate(m.mtime)}</span><span>${fmtSize(m.size)}</span>${root ? `<span>${esc(root.label)}</span>` : ''}<span>${(m.tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join('')}</span></div>
+    </div>`;
+  },
+
+  /* ---- 檔案詳情、標籤、筆記 ---- */
+  async openDetail(id) {
+    const rec = await this.db.get('files', id); if (!rec) return;
+    const dlg = $('#dlg'); const root = this.roots.find(r => r.id === rec.root);
+    const render = () => {
+      dlg.innerHTML = `<div class="dlg">
+        <h3>${esc(rec.name)}</h3><div class="path">${esc(rec.path)}</div>
+        <div class="muted" style="margin-top:4px">${esc(rec.kind)} · ${fmtSize(rec.size)} · 修改 ${fmtDate(rec.mtime)}${rec.present === false ? ' · <b>已消失</b>' : ''}${rec.hash ? ' · SHA-256 ' + rec.hash.slice(0, 12) : ''}</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" id="dOpen">開啟檔案</button>
+          <button class="btn sm" id="dCopy">複製路徑</button>
+          <button class="btn sm" id="dReindex">重新抽取內文</button>
+          <button class="btn sm" id="dClose" style="margin-left:auto">關閉</button>
+        </div>
+        <div class="section"><h4>標籤</h4><div id="dTags">${(rec.tags || []).map(t => `<span class="tag x" data-t="${esc(t)}" title="點一下移除">#${esc(t)} ×</span>`).join('') || '<span class="muted">尚無</span>'}</div>
+          <form class="row" id="dTagForm" style="margin-top:6px"><input type="text" id="dTagInput" placeholder="新標籤（空白分開可一次加多個）" style="flex:1"><button class="btn sm">加入</button></form></div>
+        <div class="section"><h4>筆記</h4><div id="dNotes">${(rec.notes || []).slice().reverse().map((n, i) => `<div class="note"><div class="t">${fmtDate(n.t)} <a href="#" data-del="${rec.notes.length - 1 - i}">刪除</a></div>${esc(n.text)}</div>`).join('') || '<span class="muted">尚無</span>'}</div>
+          <form id="dNoteForm" style="margin-top:6px"><textarea id="dNoteInput" rows="2" placeholder="寫下這個檔案的重點、脈絡、為什麼重要…" style="width:100%"></textarea><div class="row" style="margin-top:6px"><button class="btn sm primary">儲存筆記</button></div></form></div>
+        <div class="section"><h4>內文預覽${rec.text ? `（${rec.text.length.toLocaleString()} 字）` : ''}</h4><div class="preview">${rec.text ? esc(rec.text.slice(0, 3000)) : '<span class="muted">沒有抽取到內文</span>'}</div></div>
+      </div>`;
+      dlg.querySelector('#dClose').onclick = () => dlg.close();
+      dlg.querySelector('#dCopy').onclick = () => navigator.clipboard?.writeText(rec.path).then(() => toast('已複製路徑'));
+      dlg.querySelector('#dOpen').onclick = () => this.openFile(rec, root);
+      dlg.querySelector('#dReindex').onclick = async () => {
+        try { const file = await this.getFile(rec, root); const entry = { path: rec.path, size: file.size, bytes: async max => new Uint8Array(await (max ? file.slice(0, max) : file).arrayBuffer()) };
+          const text = await extractText(entry, rec.ext, 20 * 1048576); await this.updateRec(rec, r => { r.text = text; }); toast(text ? `抽取到 ${text.length} 字` : '沒有抽取到內文'); render(); } catch (e) { toast('無法讀取檔案：' + e.message); }
+      };
+      dlg.querySelectorAll('.tag.x').forEach(el => el.onclick = async () => { await this.updateRec(rec, r => { r.tags = r.tags.filter(t => t !== el.dataset.t); }); render(); });
+      dlg.querySelector('#dTagForm').onsubmit = async e => { e.preventDefault(); const v = dlg.querySelector('#dTagInput').value.trim().split(/\s+/).map(t => t.replace(/^#/, '')).filter(Boolean); if (!v.length) return;
+        await this.updateRec(rec, r => { r.tags = Array.from(new Set([...(r.tags || []), ...v])); }); render(); };
+      dlg.querySelector('#dNoteForm').onsubmit = async e => { e.preventDefault(); const v = dlg.querySelector('#dNoteInput').value.trim(); if (!v) return;
+        await this.updateRec(rec, r => { r.notes = [...(r.notes || []), { t: Date.now(), text: v }]; }); render(); };
+      dlg.querySelectorAll('[data-del]').forEach(a => a.onclick = async e => { e.preventDefault(); if (!confirm('刪除這則筆記？')) return; await this.updateRec(rec, r => { r.notes.splice(+a.dataset.del, 1); }); render(); });
+    };
+    render(); if (!dlg.open) dlg.showModal();
+    dlg.onclose = () => { this.refreshFilters(); if (!$('#tab-search').hidden) this.runSearch(); if (!$('#tab-tags').hidden) this.renderTags(); };
+  },
+  async updateRec(rec, mutate) {
+    this.index.remove(rec.id, tokenize(docTextForIndex(rec)));
+    mutate(rec);
+    this.index.add(rec.id, tokenize(docTextForIndex(rec)));
+    await this.db.put('files', rec); this.meta.set(rec.id, this.slim(rec)); await this.index.flush(this.db);
+  },
+  async getFile(rec, root) { if (!root) throw new Error('找不到來源位置'); if (root.kind === 'fsa' && !(await this.ensurePermission(root))) throw new Error('未授權'); return SOURCES[root.kind].file(root, rec); },
+  async openFile(rec, root) {
+    try {
+      if (isAndroid()) { Android.openFile(rec.srcId || rec.path); return; }
+      const f = await this.getFile(rec, root); const url = URL.createObjectURL(f);
+      const w = window.open(url, '_blank'); if (!w) download(rec.name, f);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) { toast('無法開啟：' + e.message); }
+  },
+
+  /* ---- 統計 ---- */
+  renderStats() {
+    const rows = [...this.meta.values()].filter(m => m.present !== false);
+    const total = rows.reduce((a, m) => a + (m.size || 0), 0);
+    const withText = rows.filter(m => m.hasText).length; const missing = this.meta.size - rows.length;
+    $('#tiles').innerHTML = [[rows.length.toLocaleString(), '檔案'], [fmtSize(total), '總大小'], [withText.toLocaleString(), '有內文可搜'], [this.roots.length, '位置'], [missing.toLocaleString(), '已消失']]
+      .map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    const group = (keyFn) => { const g = new Map(); for (const m of rows) { const k = keyFn(m); const o = g.get(k) || { n: 0, s: 0 }; o.n++; o.s += m.size || 0; g.set(k, o); } return [...g.entries()]; };
+    const barTable = (entries, label, byCount, limit) => {
+      entries.sort((a, b) => byCount ? b[1].n - a[1].n : b[1].s - a[1].s); entries = entries.slice(0, limit || 20);
+      const max = Math.max(1, ...entries.map(e => byCount ? e[1].n : e[1].s));
+      if (!entries.length) return '<div class="empty">尚無資料</div>';
+      return `<table><thead><tr><th>${label}</th><th class="num">檔案數</th><th class="num">大小</th><th class="barcell"></th></tr></thead><tbody>` +
+        entries.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${v.n.toLocaleString()}</td><td class="num">${fmtSize(v.s)}</td><td class="barcell"><div class="bar" style="width:${(100 * (byCount ? v.n : v.s) / max).toFixed(1)}%"></div></td></tr>`).join('') + '</tbody></table>';
+    };
+    $('#statKind').innerHTML = barTable(group(m => m.kind), '類型', false);
+    $('#statYear').innerHTML = barTable(group(m => m.mtime ? String(new Date(m.mtime).getFullYear()) : '未知').sort((a, b) => b[0].localeCompare(a[0])).slice(0, 15), '年份', true, 15).replace(/<tbody>[\s\S]*<\/tbody>/, s => s);
+    $('#statExt').innerHTML = barTable(group(m => m.ext || '(無)'), '副檔名', true, 15);
+    $('#statRoot').innerHTML = barTable(group(m => (this.roots.find(r => r.id === m.root) || {}).label || '?'), '位置', false);
+    const largest = rows.slice().sort((a, b) => b.size - a.size).slice(0, 15);
+    $('#statLargest').innerHTML = `<table><tbody>${largest.map(m => `<tr data-id="${m.id}" class="result" style="display:table-row"><td class="num">${fmtSize(m.size)}</td><td class="num">${fmtDate(m.mtime)}</td><td class="path">${esc(m.path)}</td></tr>`).join('')}</tbody></table>`;
+    const dirs = group(m => m.dir).sort((a, b) => b[1].n - a[1].n).slice(0, 15);
+    $('#statDirs').innerHTML = `<table><tbody>${dirs.map(([d, v]) => `<tr><td class="num">${v.n.toLocaleString()}</td><td class="num">${fmtSize(v.s)}</td><td class="path">${esc(d)}</td></tr>`).join('')}</tbody></table>`;
+  },
+
+  /* ---- 重複檔 ---- */
+  async findDupes() {
+    const min = +$('#dupMin').value; const status = $('#dupStatus'); const out = $('#dupResults');
+    const bySize = new Map();
+    for (const m of this.meta.values()) if (m.present !== false && m.size >= min && m.size > 0) { const a = bySize.get(m.size) || []; a.push(m); bySize.set(m.size, a); }
+    const groups = [...bySize.values()].filter(a => a.length > 1);
+    status.textContent = `有 ${groups.length} 組大小相同的檔案要比對…`; out.innerHTML = '';
+    const byHash = new Map(); let hashed = 0, failed = 0;
+    for (const g of groups) {
+      for (const m of g) {
+        let rec = await this.db.get('files', m.id);
+        if (!rec.hash) {
+          try { const root = this.roots.find(r => r.id === rec.root); const f = await this.getFile(rec, root);
+            const digest = await crypto.subtle.digest('SHA-256', await f.arrayBuffer());
+            rec.hash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join(''); await this.db.put('files', rec); this.meta.set(rec.id, this.slim(rec)); hashed++;
+          } catch (e) { failed++; continue; }
+        }
+        const a = byHash.get(rec.hash) || []; a.push(this.meta.get(rec.id)); byHash.set(rec.hash, a);
+      }
+      status.textContent = `已計算 ${hashed} 個雜湊${failed ? `，${failed} 個無法讀取` : ''}…`; await sleep(0);
+    }
+    const dupes = [...byHash.entries()].filter(([, a]) => a.length > 1).sort((a, b) => b[1][0].size * (b[1].length - 1) - a[1][0].size * (a[1].length - 1));
+    const wasted = dupes.reduce((s, [, a]) => s + a[0].size * (a.length - 1), 0);
+    status.textContent = `共 ${dupes.length} 組重複檔，重複部分佔用 ${fmtSize(wasted)}${failed ? `（${failed} 個檔案無法讀取，已略過）` : ''}`;
+    out.innerHTML = dupes.length ? dupes.slice(0, 200).map(([h, a]) => `<div class="card"><h2>${fmtSize(a[0].size)} × ${a.length}　<span class="muted">${h.slice(0, 12)}</span></h2>${a.map(m => `<div class="result" data-id="${m.id}"><div class="path">${fmtDate(m.mtime)}　${esc(m.path)}</div></div>`).join('')}</div>`).join('') : '<div class="card"><div class="empty">沒有重複檔案</div></div>';
+  },
+
+  /* ---- 標籤頁 ---- */
+  async renderTags() {
+    const counts = new Map(); for (const m of this.meta.values()) for (const t of m.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
+    const tags = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    $('#tagCloud').innerHTML = tags.length ? tags.map(([t, n]) => `<button class="btn sm" data-tag="${esc(t)}">#${esc(t)} <span class="muted">${n}</span></button>`).join('') : '<span class="muted">尚無標籤。在搜尋結果點一個檔案就能加標籤。</span>';
+    const notes = [];
+    await this.db.iterate('files', r => { for (const n of r.notes || []) notes.push({ t: n.t, text: n.text, id: r.id, name: r.name, path: r.path }); });
+    notes.sort((a, b) => b.t - a.t);
+    $('#recentNotes').innerHTML = notes.length ? notes.slice(0, 50).map(n => `<div class="note result" data-id="${n.id}"><div class="t">${fmtDate(n.t)} · ${esc(n.name)}</div>${esc(n.text)}</div>`).join('') : '<span class="muted">尚無筆記。</span>';
+  },
+
+  /* ---- 匯出 ---- */
+  async exportMarkdown() {
+    const rows = [...this.meta.values()].filter(m => m.present !== false);
+    const link = m => `[${m.name.replace(/[\[\]]/g, '')}](${m.path.startsWith('/') ? 'file://' + encodeURI(m.path) : encodeURI(m.path)})`;
+    const line = m => `| ${link(m)} | ${fmtDate(m.mtime)} | ${fmtSize(m.size)} | \`${m.dir}\` |`;
+    const head = '| 檔案 | 修改時間 | 大小 | 位置 |\n|---|---|---|---|';
+    const by = (keyFn) => { const g = new Map(); for (const m of rows) { const k = keyFn(m); (g.get(k) || g.set(k, []).get(k)).push(m); } return g; };
+    const md = [`# 我的第二大腦 — 檔案索引`, ``, `更新：${fmtDate(Date.now())}　檔案：${rows.length.toLocaleString()}　總大小：${fmtSize(rows.reduce((a, m) => a + m.size, 0))}`, ``];
+    md.push(`## 最近修改`, ``, head, ...rows.slice().sort((a, b) => b.mtime - a.mtime).slice(0, 100).map(line), ``);
+    for (const [k, a] of [...by(m => m.kind).entries()].sort((x, y) => y[1].length - x[1].length)) md.push(`## 類型：${k}（${a.length}）`, ``, head, ...a.sort((x, y) => y.mtime - x.mtime).slice(0, 2000).map(line), ``);
+    for (const [k, a] of [...by(m => m.mtime ? new Date(m.mtime).getFullYear() : '未知').entries()].sort((x, y) => String(y[0]).localeCompare(String(x[0])))) md.push(`## 年份：${k}（${a.length}）`, ``, head, ...a.slice(0, 2000).map(line), ``);
+    const dirs = by(m => m.dir); md.push(`## 依資料夾`, ``);
+    for (const [d, a] of [...dirs.entries()].sort()) md.push(`### ${d}（${a.length}）`, ``, ...a.map(m => `- ${link(m)} — ${fmtSize(m.size)}，${fmtDate(m.mtime)}`), ``);
+    const tags = new Map(); for (const m of rows) for (const t of m.tags || []) (tags.get(t) || tags.set(t, []).get(t)).push(m);
+    if (tags.size) { md.push(`## 標籤`, ``); for (const [t, a] of tags) md.push(`### #${t}`, ``, ...a.map(m => `- ${link(m)}`), ``); }
+    const notes = []; await this.db.iterate('files', r => { for (const n of r.notes || []) notes.push(`- **${fmtDate(n.t)}** ${link(r)}：${n.text.replace(/\n/g, ' ')}`); });
+    if (notes.length) md.push(`## 筆記`, ``, ...notes, ``);
+    const byHash = new Map(); for (const m of rows) if (m.hash) (byHash.get(m.hash) || byHash.set(m.hash, []).get(m.hash)).push(m);
+    const dup = [...byHash.values()].filter(a => a.length > 1);
+    if (dup.length) { md.push(`## 重複檔案`, ``); for (const a of dup) md.push(`### ${fmtSize(a[0].size)} × ${a.length}`, ``, ...a.map(m => `- ${m.path}`), ``); }
+    download(`第二大腦索引_${new Date().toISOString().slice(0, 10)}.md`, md.join('\n'), 'text/markdown;charset=utf-8');
+  },
+  async backup(withText) {
+    const files = []; await this.db.iterate('files', r => { const o = { ...r }; if (!withText) delete o.text; files.push(o); });
+    const roots = this.roots.map(r => { const { handle, files, entries, ...rest } = r; return rest; });
+    download(`第二大腦備份_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ app: 'second_brain_web', version: VERSION, exported: Date.now(), roots, files }), 'application/json');
+  },
+  async restore(file) {
+    let data; try { data = JSON.parse(await file.text()); } catch (e) { toast('不是有效的 JSON'); return; }
+    if (!data || !Array.isArray(data.files)) { toast('不是第二大腦的備份檔'); return; }
+    const rootMap = new Map();
+    for (const r of data.roots || []) { const nr = await this.addRoot({ kind: r.kind === 'fsa' ? 'input' : r.kind, label: r.label, srcId: r.srcId, lastScan: r.lastScan }); rootMap.set(r.id, nr.id); }
+    let n = 0;
+    for (const f of data.files) {
+      const old = await this.db.getByPath(f.path);
+      const rec = { ...f, id: old ? old.id : undefined, root: rootMap.get(f.root) ?? f.root, text: f.text ?? (old ? old.text : ''), tags: Array.from(new Set([...(old?.tags || []), ...(f.tags || [])])), notes: [...(old?.notes || []), ...(f.notes || [])].filter((x, i, a) => a.findIndex(y => y.t === x.t && y.text === x.text) === i) };
+      if (rec.id === undefined) delete rec.id;
+      if (old) this.index.remove(old.id, tokenize(docTextForIndex(old)));
+      rec.id = await this.db.put('files', rec); this.index.add(rec.id, tokenize(docTextForIndex(rec))); this.meta.set(rec.id, this.slim(rec)); n++;
+    }
+    await this.index.flush(this.db); this.renderRoots(); this.refreshFilters(); this.updateHeader(); toast(`已還原 ${n} 筆`);
+  },
+  async clearAll() {
+    if (!confirm('確定要清除全部資料（索引、標籤、筆記）？實際檔案不會被刪除。')) return;
+    for (const s of ['files', 'roots', 'postings', 'meta']) await this.db.clear(s);
+    this.roots = []; this.meta = new Map(); this.index = new InvertedIndex();
+    this.renderRoots(); this.refreshFilters(); this.updateHeader(); $('#searchResults').innerHTML = '<div class="empty">已清除。</div>'; toast('已清除全部資料');
+  },
+
+  /* ---- UI ---- */
+  showTab(name) {
+    if (!document.getElementById('tab-' + name)) name = 'search';
+    document.querySelectorAll('main > section').forEach(s => s.hidden = s.id !== 'tab-' + name);
+    document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
+    history.replaceState(null, '', '#' + name);
+    if (name === 'stats') this.renderStats(); if (name === 'tags') this.renderTags(); if (name === 'export') this.renderDbInfo();
+  },
+  renderRoots() {
+    const el = $('#rootsList');
+    if (!this.roots.length) { el.innerHTML = '<div class="empty">尚無。點上方「選擇資料夾並掃描」開始。</div>'; return; }
+    el.innerHTML = this.roots.map(r => `<div class="r"><div class="n">${esc(r.label)} <span class="muted">${r.kind === 'android' ? 'Android' : r.kind === 'fsa' ? '資料夾' : r.kind === 'input' ? '匯入' : r.kind}</span></div>
+      <div class="muted">${this.countRoot(r.id).toLocaleString()} 個檔案${r.lastScan ? ' · 上次掃描 ' + fmtDate(r.lastScan) : ''}</div>
+      <button class="btn sm" data-rescan="${r.id}" ${this.scanning ? 'disabled' : ''}>重新掃描</button><button class="btn sm danger" data-remove="${r.id}">移除</button></div>`).join('');
+    el.querySelectorAll('[data-rescan]').forEach(b => b.onclick = () => this.scan(this.roots.find(r => r.id === +b.dataset.rescan)));
+    el.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => this.removeRoot(this.roots.find(r => r.id === +b.dataset.remove)));
+  },
+  refreshFilters() {
+    const kinds = new Set(), tags = new Set();
+    for (const m of this.meta.values()) { kinds.add(m.kind); for (const t of m.tags || []) tags.add(t); }
+    const keep = (sel, opts, label) => { const v = sel.value; sel.innerHTML = `<option value="">${label}</option>` + opts.map(([val, txt]) => `<option value="${esc(val)}">${esc(txt)}</option>`).join(''); sel.value = [...sel.options].some(o => o.value === v) ? v : ''; };
+    keep($('#fKind'), [...kinds].sort().map(k => [k, k]), '所有類型');
+    keep($('#fRoot'), this.roots.map(r => [r.id, r.label]), '所有位置');
+    keep($('#fTag'), [...tags].sort().map(t => [t, '#' + t]), '所有標籤');
+  },
+  updateHeader() { let n = 0; for (const m of this.meta.values()) if (m.present !== false) n++; $('#hdrCount').textContent = n ? `${n.toLocaleString()} 個檔案` : ''; },
+  async renderDbInfo() {
+    let est = ''; try { const e = await navigator.storage.estimate(); est = `，佔用約 ${fmtSize(e.usage)}`; } catch (e) { /* ignore */ }
+    $('#dbInfo').textContent = `${this.meta.size.toLocaleString()} 筆檔案紀錄、${this.index.map.size.toLocaleString()} 個索引詞${est}。`;
+  },
+  bindUI() {
+    $('#tabs').onclick = e => { const b = e.target.closest('button[data-tab]'); if (b) this.showTab(b.dataset.tab); };
+    $('#searchForm').onsubmit = e => { e.preventDefault(); this.runSearch(); };
+    ['#fKind', '#fRoot', '#fTag', '#fSort', '#fMissing'].forEach(s => $(s).onchange = () => this.runSearch());
+    let typing; $('#q').oninput = () => { clearTimeout(typing); typing = setTimeout(() => this.runSearch(), 250); };
+    document.body.addEventListener('click', e => { const r = e.target.closest('.result[data-id]'); if (r && !e.target.closest('a')) this.openDetail(+r.dataset.id);
+      const t = e.target.closest('button[data-tag]'); if (t) { $('#fTag').value = t.dataset.tag; $('#q').value = ''; this.showTab('search'); this.runSearch(); } });
+    $('#btnPick').onclick = () => this.pickFolder();
+    $('#pickFallback').onchange = e => this.pickFallback(e.target.files);
+    $('#btnStop').onclick = () => { this.stopFlag = true; };
+    $('#btnDupes').onclick = () => this.findDupes();
+    $('#btnExportMd').onclick = () => this.exportMarkdown();
+    $('#btnBackup').onclick = () => this.backup($('#optBackupText').checked);
+    $('#btnRestore').onclick = () => $('#restoreFile').click();
+    $('#restoreFile').onchange = e => { if (e.target.files[0]) this.restore(e.target.files[0]); e.target.value = ''; };
+    $('#btnRebuild').onclick = async () => { toast('重建中…'); await this.index.rebuild(this.db); toast('索引已重建'); this.renderDbInfo(); };
+    $('#btnClear').onclick = () => this.clearAll();
+    $('#btnTheme').onclick = () => { const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); const next = cur === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = next; try { localStorage.setItem('sb_theme', next); } catch (e) { /* ignore */ } };
+    try { const t = localStorage.getItem('sb_theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) { /* ignore */ }
+    if (isAndroid()) { $('#btnScanAll').hidden = false; $('#btnScanAll').onclick = () => Android.scanAll(); $('#pickHint').textContent = '「選擇資料夾」會開啟 Android 的資料夾選擇器；「掃描整個手機儲存空間」需要授予「所有檔案存取權」。'; }
+    else if (window.showDirectoryPicker) $('#pickHint').textContent = '選一個資料夾（例如整個 D 槽或「文件」），瀏覽器會問你是否允許讀取。之後可直接按「重新掃描」做增量更新。';
+    else $('#pickHint').textContent = '這個瀏覽器不支援直接讀取資料夾，會改用一次性匯入模式：重新整理後需要重選資料夾才能重新掃描或開啟檔案。建議改用 Chrome / Edge。';
+    window.addEventListener('hashchange', () => this.showTab(location.hash.slice(1)));
+  },
+};
+
+/* 測試 / 自動化用的小 API */
+window.__sb = {
+  app,
+  async scanMemory(label, entries) {
+    // entries: [{path:'label/子資料夾/檔名', name, size, mtime, data:Uint8Array}]
+    const root = await app.addRoot({ kind: 'memory', label }); root.entries = entries; await app.scan(root); return root;
+  },
+  search: (q, f) => app.search(q, f),
+  tokenize, unzip, decodeText,
+};
+
+app.init().catch(e => { console.error(e); document.body.insertAdjacentHTML('afterbegin', `<div class="card" style="margin:16px;color:var(--critical)">啟動失敗：${esc(e.message || e)}。這個瀏覽器可能不支援 IndexedDB（例如私密模式）。</div>`); });
+</script>
+</body>
+</html>
