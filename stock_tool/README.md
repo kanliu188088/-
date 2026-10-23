@@ -1,13 +1,30 @@
 # 股價指標萃取工具
 
-輸入一個股價 Excel 檔，自動算出與 `python.csv` 相同的指標，並輸出成新的 Excel。
+輸入一個股價 Excel 檔，自動算出與 `python.csv` 相同的指標，並輸出成新的 Excel。共有三種版本，公式完全相同：
 
-## 安裝
+| 版本 | 檔案 | 使用方式 |
+|---|---|---|
+| 網頁版 | `dist/股價指標萃取器.html` | 用 Chrome / Edge 直接開啟，不需安裝、不需網路 |
+| Android App | `dist/股價指標萃取器.apk` | 傳到手機安裝（需允許「安裝不明來源應用程式」），Android 7.0 以上 |
+| Python 版 | `stock_indicators.py` | 見下方「安裝」 |
+
+網頁版與 App 都在本機計算，檔案不會上傳；可選擇工作表、手動指定欄位、搜尋與排序個股、查看走勢圖，並下載結果 Excel / CSV。
+
+### 重新產生網頁版與 APK
+```
+python web/build.py          # 產生 dist/股價指標萃取器.html
+android/build_apk.sh         # 產生 dist/股價指標萃取器.apk（需要 JDK 17+ 與 Python 3）
+```
+APK 為 WebView 外殼（`android/src`）加上離線網頁。第一次打包會產生簽章金鑰 `android/release.p12`（不會上傳到 git），之後更新 App 必須使用同一把金鑰。
+
+## Python 版
+
+### 安裝
 ```
 pip install -r requirements.txt
 ```
 
-## 使用
+### 使用
 ```
 python stock_indicators.py 我的股價.xlsx          # 產生 我的股價_結果.xlsx
 python stock_indicators.py 我的股價.xlsx --csv    # 另外產生與 python.csv 同格式的 CSV
