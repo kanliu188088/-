@@ -166,6 +166,15 @@ details.q p { color: var(--muted); padding-top: 6px; font-size: .92rem; }
 .cardlist b { font-weight: 500; }
 .exportbox { width: 100%; min-height: 100px; font-family: var(--f-mono); font-size: .8rem; }
 
+/* listening (TTS) */
+.tts { width: 100%; max-width: 560px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: center; padding: 10px 12px; border: 1px dashed var(--rule); border-radius: 8px; }
+.tts label { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--muted); }
+.tts select { width: auto; max-width: 11em; padding: 4px 8px; }
+.btn.listen[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.tts-msg { width: 100%; text-align: center; font-size: .85rem; color: var(--muted); min-height: 1.4em; }
+.fcard.speaking .face { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+.export-note { font-size: .82rem; color: var(--muted); width: 100%; }
+
 /* aside */
 .aside { display: grid; gap: 12px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
 @media (max-width: 860px) { .aside { position: static; } }
@@ -587,6 +596,8 @@ ${sourceBlock}
     const deck = findDeck(currentId);
     const p = deck.plan;
     const root = $("#plan");
+    listenToken++;
+    tts.stop();
     root.replaceChildren();
 
     const head = el("div", "plan-head");
@@ -697,14 +708,313 @@ ${sourceBlock}
         copyBtn.textContent = "請手動複製下方文字";
       }
     };
-    exp.append(copyBtn);
+    const epubBtn = el("button", "btn small", "下載電子書（EPUB）");
+    epubBtn.type = "button";
+    const epubNote = el("p", "export-note", "電子書裡一頁是問題、下一頁是答案，翻頁就像翻閃卡。iPhone 用 Apple Books、Android 用 Google Play 圖書開啟，也可以用閱讀器內建的朗讀功能邊聽邊複習。");
+    epubBtn.onclick = async () => {
+      epubBtn.disabled = true;
+      epubNote.textContent = "正在製作電子書…";
+      try {
+        const blob = await buildEpub(deck);
+        // 檔名用英數字：部分瀏覽器會把中文檔名變成「download」。書名（中文）存在電子書內，閱讀器會顯示書名。
+        const t = new Date();
+        const stamp = `${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}-${pad(t.getHours())}${pad(t.getMinutes())}`;
+        const ok = await saveFile(`flashcards-${stamp}.epub`, blob);
+        epubNote.textContent = ok ? "電子書已下載。傳到手機後，用 Apple Books 或 Google Play 圖書開啟。" : "已取消下載。";
+      } catch (e) {
+        epubNote.textContent = e?.message || "無法製作電子書，請再試一次。";
+      } finally {
+        epubBtn.disabled = false;
+      }
+    };
+    exp.append(epubBtn, copyBtn, epubNote);
     all.append(exp, out);
     root.append(all);
   }
 
+  // ---------- e-book (EPUB 3) ----------
+  const xml = (s) => str(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const nl2br = (s) => xml(s).replace(/\n/g, "<br/>");
+  const pad = (n) => String(n).padStart(2, "0");
+
+  function xhtmlPage(title, body) {
+    return `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="zh-Hant" lang="zh-Hant">
+<head><meta charset="utf-8"/><title>${xml(title)}</title><link rel="stylesheet" type="text/css" href="style.css"/></head>
+<body>
+${body}
+</body>
+</html>`;
+  }
+
+  const EPUB_CSS = `body { line-height: 1.75; margin: 0 4%; }
+h1 { font-size: 1.8em; line-height: 1.3; margin: 2em 0 .4em; }
+h2 { font-size: 1.3em; margin: 1.6em 0 .5em; }
+h3 { font-size: 1.05em; margin: 1.2em 0 .3em; }
+.essence { font-size: 1.2em; font-weight: bold; border-left: 4px solid #E0B400; padding-left: .7em; margin: 1.2em 0; }
+.muted, .tag, .turn, .qsmall { color: #666; }
+.tag { font-size: .85em; letter-spacing: .1em; margin-top: 2.5em; }
+.big { font-size: 1.45em; line-height: 1.6; margin: 1.2em 0; }
+.turn { text-align: right; font-size: .9em; margin-top: 3em; }
+.qsmall { font-size: .95em; border-bottom: 1px solid #ccc; padding-bottom: .6em; }
+.mins { font-weight: bold; }
+.analogy { color: #555; font-style: italic; }
+.model { white-space: pre-wrap; border: 1px solid #ccc; padding: .8em; }
+dt { font-weight: bold; margin-top: 1em; }
+dd { margin: .2em 0 0 0; }`;
+
+  async function buildEpub(deck) {
+    const p = deck.plan;
+    const bookTitle = `${p.title}・閃卡`;
+    const uid = "urn:uuid:" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(16) + "-" + Math.random().toString(16).slice(2));
+    const modified = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+    const files = []; // {id, href, title, html}
+
+    files.push({ id: "title", href: "title.xhtml", title: "封面", html: xhtmlPage(bookTitle, `
+<h1>${xml(p.title)}</h1>
+<p class="muted">${deck.minutes || 30} 分鐘學習計畫・${deck.cards.length} 張閃卡</p>
+<p class="essence">${xml(p.essence)}</p>
+${p.why ? `<p>${xml(p.why)}</p>` : ""}
+${p.source_note ? `<p class="muted">提醒：${xml(p.source_note)}</p>` : ""}`) });
+
+    files.push({ id: "howto", href: "howto.xhtml", title: "怎麼用這本書", html: xhtmlPage("怎麼用這本書", `
+<h2>怎麼用這本書</h2>
+<p>每張閃卡佔兩頁：先看<strong>問題</strong>，在心裡說出答案，再翻到下一頁對<strong>答案</strong>。</p>
+<p>想用聽的：打開閱讀器的朗讀功能（Apple Books：用 Siri 朗讀或「設定 → 輔助使用 → 朗讀內容」；Google Play 圖書：選單中的「朗讀」）。</p>
+<p>建議複習時間：學完當下、隔天、3 天後、1 週後、1 個月後。</p>
+<p>書末的「速查表」把全部問答列在一起，方便快速複習。</p>`) });
+
+    let plan = `<h2>學習計畫</h2>`;
+    if (p.steps.length) plan += `<h3>學習路線</h3><ol>${p.steps.map((s) => `<li><span class="mins">${xml(s.minutes)} 分鐘</span>　${xml(s.title)}<br/>${xml(s.action)}</li>`).join("")}</ol>`;
+    if (p.ideas.length) plan += `<h3>關鍵 20%：核心概念</h3>${p.ideas.map((i) => `<p><strong>${xml(i.idea)}</strong><br/>${xml(i.simple)}${i.analogy ? `<br/><span class="analogy">類比：${xml(i.analogy)}</span>` : ""}</p>`).join("")}`;
+    if (p.model) plan += `<h3>心智模型</h3><p class="model">${nl2br(p.model)}</p>`;
+    if (p.misconceptions.length) plan += `<h3>常見誤解</h3><ul>${p.misconceptions.map((m) => `<li>${xml(m)}</li>`).join("")}</ul>`;
+    if (p.apply.length) plan += `<h3>馬上應用</h3><ul>${p.apply.map((m) => `<li>${xml(m)}</li>`).join("")}</ul>`;
+    if (p.selftest.length) plan += `<h3>自我測驗</h3><dl>${p.selftest.map((q) => `<dt>${xml(q.q)}</dt><dd>${xml(q.a)}</dd>`).join("")}</dl>`;
+    files.push({ id: "plan", href: "plan.xhtml", title: "學習計畫", html: xhtmlPage("學習計畫", plan) });
+
+    deck.cards.forEach((c, i) => {
+      const n = pad(i + 1);
+      const tag = c.tag ? `・${xml(c.tag)}` : "";
+      files.push({ id: "q" + n, href: `q-${n}.xhtml`, title: `第 ${i + 1} 張：${c.q}`, card: true, html: xhtmlPage(`第 ${i + 1} 張 問題`, `
+<p class="tag">第 ${i + 1} / ${deck.cards.length} 張${tag}</p>
+<h2>問題</h2>
+<p class="big">${xml(c.q)}</p>
+<p class="turn">想好答案，再翻到下一頁 →</p>`) });
+      files.push({ id: "a" + n, href: `a-${n}.xhtml`, title: `第 ${i + 1} 張答案`, card: true, answer: true, html: xhtmlPage(`第 ${i + 1} 張 答案`, `
+<p class="tag">第 ${i + 1} / ${deck.cards.length} 張・答案</p>
+<p class="qsmall">${xml(c.q)}</p>
+<h2>答案</h2>
+<p class="big">${xml(c.a)}</p>`) });
+    });
+
+    files.push({ id: "review", href: "review.xhtml", title: "速查表", html: xhtmlPage("速查表", `
+<h2>速查表</h2>
+<dl>${deck.cards.map((c, i) => `<dt>${i + 1}. ${xml(c.q)}</dt><dd>${xml(c.a)}</dd>`).join("")}</dl>`) });
+
+    const firstCard = files.find((f) => f.card);
+    const tocTop = [files[0], files[1], files[2], { href: firstCard.href, title: "閃卡", sub: files.filter((f) => f.card && !f.answer) }, files[files.length - 1]];
+
+    const nav = xhtmlPage("目錄", `
+<nav epub:type="toc" id="toc"><h2>目錄</h2><ol>
+${tocTop.map((t) => `<li><a href="${t.href}">${xml(t.title)}</a>${t.sub ? `<ol>${t.sub.map((s) => `<li><a href="${s.href}">${xml(s.title)}</a></li>`).join("")}</ol>` : ""}</li>`).join("\n")}
+</ol></nav>`);
+
+    // 指向同一頁的項目必須有相同的 playOrder，且編號不能跳號
+    const orders = new Map();
+    const pageOrder = (href) => { if (!orders.has(href)) orders.set(href, orders.size + 1); return orders.get(href); };
+    let npId = 0;
+    const navPoint = (t) => `<navPoint id="np${++npId}" playOrder="${pageOrder(t.href)}"><navLabel><text>${xml(t.title)}</text></navLabel><content src="${t.href}"/>${t.sub ? t.sub.map(navPoint).join("") : ""}</navPoint>`;
+    const ncx = `<?xml version="1.0" encoding="utf-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+<head><meta name="dtb:uid" content="${uid}"/></head>
+<docTitle><text>${xml(bookTitle)}</text></docTitle>
+<navMap>${tocTop.map(navPoint).join("")}</navMap>
+</ncx>`;
+
+    const opf = `<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid" xml:lang="zh-Hant">
+<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+<dc:identifier id="bookid">${uid}</dc:identifier>
+<dc:title>${xml(bookTitle)}</dc:title>
+<dc:language>zh-Hant</dc:language>
+<dc:creator>精華速學卡</dc:creator>
+<meta property="dcterms:modified">${modified}</meta>
+</metadata>
+<manifest>
+<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+<item id="css" href="style.css" media-type="text/css"/>
+${files.map((f) => `<item id="${f.id}" href="${f.href}" media-type="application/xhtml+xml"/>`).join("\n")}
+</manifest>
+<spine toc="ncx">
+${files.map((f) => `<itemref idref="${f.id}"/>`).join("\n")}
+</spine>
+</package>`;
+
+    const zip = [];
+    const add = (name, text) => zip.push({ name, text });
+    add("mimetype", "application/epub+zip"); // 規範要求放第一個
+    add("META-INF/container.xml", `<?xml version="1.0" encoding="utf-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+<rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles>
+</container>`);
+    add("OEBPS/content.opf", opf);
+    add("OEBPS/nav.xhtml", nav);
+    add("OEBPS/toc.ncx", ncx);
+    add("OEBPS/style.css", EPUB_CSS);
+    files.forEach((f) => add("OEBPS/" + f.href, f.html));
+    return makeZip(zip, "application/epub+zip");
+  }
+
+  // 不壓縮（STORE）的 ZIP 寫入器：EPUB 允許，且不需要任何外部套件、可離線使用
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  function makeZip(entries, mime) {
+    const enc = new TextEncoder();
+    const d = new Date();
+    const dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+    const dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    const parts = [], central = [];
+    let offset = 0;
+    for (const e of entries) {
+      const name = enc.encode(e.name);
+      const data = enc.encode(e.text);
+      const crc = crc32(data);
+      const local = new DataView(new ArrayBuffer(30));
+      local.setUint32(0, 0x04034B50, true);
+      local.setUint16(4, 20, true);
+      local.setUint16(6, 0x0800, true); // 檔名為 UTF-8
+      local.setUint16(8, 0, true); // STORE
+      local.setUint16(10, dosTime, true);
+      local.setUint16(12, dosDate, true);
+      local.setUint32(14, crc, true);
+      local.setUint32(18, data.length, true);
+      local.setUint32(22, data.length, true);
+      local.setUint16(26, name.length, true);
+      local.setUint16(28, 0, true);
+      parts.push(local, name, data);
+      const cen = new DataView(new ArrayBuffer(46));
+      cen.setUint32(0, 0x02014B50, true);
+      cen.setUint16(4, 20, true);
+      cen.setUint16(6, 20, true);
+      cen.setUint16(8, 0x0800, true);
+      cen.setUint16(10, 0, true);
+      cen.setUint16(12, dosTime, true);
+      cen.setUint16(14, dosDate, true);
+      cen.setUint32(16, crc, true);
+      cen.setUint32(20, data.length, true);
+      cen.setUint32(24, data.length, true);
+      cen.setUint16(28, name.length, true);
+      cen.setUint32(42, offset, true);
+      central.push(cen, name);
+      offset += 30 + name.length + data.length;
+    }
+    const cenSize = central.reduce((n, x) => n + x.byteLength, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054B50, true);
+    end.setUint16(8, entries.length, true);
+    end.setUint16(10, entries.length, true);
+    end.setUint32(12, cenSize, true);
+    end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end], { type: mime });
+  }
+
+  async function saveFile(filename, blob) {
+    if (window.claude && typeof window.claude.use === "function") {
+      const dl = await window.claude.use("downloads").catch(() => null);
+      if (!dl) throw new Error("這個檢視環境無法下載檔案。");
+      try {
+        await dl.save({ filename, data: blob });
+        return true;
+      } catch (e) {
+        if (e?.code === "declined") return false;
+        throw new Error(e?.code === "rate_limited" ? "已有一個下載視窗開著，請稍後再試。" : "無法下載檔案。");
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    return true;
+  }
+
+  // ---------- text-to-speech ----------
+  const tts = {
+    ok: "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function",
+    rate: Number(store.get("jhsx.rate", 1)) || 1,
+    voiceURI: store.get("jhsx.voice", ""),
+    voices() {
+      if (!this.ok) return [];
+      const all = speechSynthesis.getVoices();
+      const zh = all.filter((v) => /^(zh|cmn|yue)/i.test(v.lang));
+      return zh.length ? zh : all;
+    },
+    pick() {
+      const vs = this.voices();
+      return vs.find((v) => v.voiceURI === this.voiceURI)
+        || vs.find((v) => /zh[-_]TW/i.test(v.lang))
+        || vs.find((v) => /zh[-_](HK|Hant)/i.test(v.lang))
+        || vs.find((v) => /^zh/i.test(v.lang))
+        || null;
+    },
+    speak(text) {
+      return new Promise((resolve) => {
+        if (!this.ok || !text) return resolve(false);
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const v = this.pick();
+        if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "zh-TW";
+        u.rate = this.rate;
+        let settled = false;
+        const done = (ok) => { if (!settled) { settled = true; clearTimeout(timer); resolve(ok); } };
+        // 有些瀏覽器偶爾不觸發 onend，用字數估計的時間當保險
+        const timer = setTimeout(() => done(true), 3000 + (text.length * 450) / this.rate);
+        u.onend = () => done(true);
+        u.onerror = (e) => done(e.error === "interrupted" || e.error === "canceled");
+        speechSynthesis.speak(u);
+      });
+    },
+    stop() { if (this.ok) speechSynthesis.cancel(); },
+  };
+  let listenToken = 0;
+  let refreshVoices = null;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  if (tts.ok) speechSynthesis.addEventListener?.("voiceschanged", () => refreshVoices && refreshVoices());
+
+  function selectField(id, labelText, options, value, onChange) {
+    const lab = el("label");
+    lab.htmlFor = id;
+    lab.append(labelText);
+    const sel = el("select");
+    sel.id = id;
+    options.forEach(([v, t]) => { const o = el("option", null, t); o.value = v; sel.append(o); });
+    sel.value = value;
+    sel.onchange = () => onChange(sel.value);
+    lab.append(sel);
+    return [lab, sel];
+  }
+
   // ---------- flashcard study ----------
   function renderStudy(deck) {
-    const s = section("閃卡複習", "點卡片翻面 · 空白鍵翻面 · 1 再一次 · 2 記住了");
+    const s = section("閃卡複習", "點卡片翻面 · 空白鍵翻面 · 1 再一次 · 2 記住了 · 可用聽的");
     const wrap = el("div", "study");
     s.append(wrap);
 
@@ -743,7 +1053,34 @@ ${sourceBlock}
     const finish = el("div", "done");
     finish.hidden = true;
 
-    wrap.append(meta, stage, actions, finish);
+    // 朗讀工具列
+    const ttsBar = el("div", "tts");
+    const ttsMsg = el("p", "tts-msg");
+    const speakBtn = el("button", "btn ghost small", "朗讀這一面");
+    const listenBtn = el("button", "btn small listen", "聽卡模式");
+    speakBtn.type = listenBtn.type = "button";
+    listenBtn.setAttribute("aria-pressed", "false");
+    let gap = Number(store.get("jhsx.gap", 5)) || 5;
+    if (tts.ok) {
+      const [rateLab] = selectField("tts-rate", "語速", [["0.8", "慢"], ["1", "正常"], ["1.25", "快"]], String(tts.rate), (v) => { tts.rate = Number(v); store.set("jhsx.rate", tts.rate); });
+      const [gapLab] = selectField("tts-gap", "思考時間", [["3", "3 秒"], ["5", "5 秒"], ["8", "8 秒"], ["12", "12 秒"]], String(gap), (v) => { gap = Number(v); store.set("jhsx.gap", gap); });
+      const [voiceLab, voiceSel] = selectField("tts-voice", "聲音", [], "", (v) => { tts.voiceURI = v; store.set("jhsx.voice", v); });
+      refreshVoices = () => {
+        const vs = tts.voices();
+        const cur = tts.pick();
+        voiceSel.replaceChildren();
+        if (!vs.length) { const o = el("option", null, "預設"); o.value = ""; voiceSel.append(o); return; }
+        vs.forEach((v) => { const o = el("option", null, `${v.name}（${v.lang}）`); o.value = v.voiceURI; voiceSel.append(o); });
+        if (cur) voiceSel.value = cur.voiceURI;
+      };
+      refreshVoices();
+      ttsBar.append(speakBtn, listenBtn, rateLab, gapLab, voiceLab, ttsMsg);
+      ttsMsg.textContent = "聽卡模式：自動唸問題 → 留時間讓你想 → 唸答案 → 下一張。";
+    } else {
+      ttsBar.append(el("p", "tts-msg", "這個瀏覽器不支援朗讀，請改用 Chrome、Edge 或 Safari。"));
+    }
+
+    wrap.append(meta, stage, actions, ttsBar, finish);
 
     function start() {
       queue = deck.cards.map((_, i) => i).sort(() => Math.random() - 0.5);
@@ -789,16 +1126,66 @@ ${sourceBlock}
       show();
     }
 
-    card.onclick = flip;
-    again.onclick = () => answer(false);
-    got.onclick = () => answer(true);
-    shuffleBtn.onclick = start;
+    // ---- 聽卡模式 ----
+    let listening = false;
+    function stopListen(note) {
+      if (!listening) return;
+      listening = false;
+      listenToken++;
+      tts.stop();
+      card.classList.remove("speaking");
+      listenBtn.setAttribute("aria-pressed", "false");
+      listenBtn.textContent = "聽卡模式";
+      ttsMsg.textContent = note || "已停止聆聽。";
+    }
+    async function listen() {
+      if (stage.hidden) start();
+      const my = ++listenToken;
+      listening = true;
+      listenBtn.setAttribute("aria-pressed", "true");
+      listenBtn.textContent = "停止聆聽";
+      const n = queue.length;
+      for (let i = 0; i < n; i++) {
+        if (my !== listenToken) return;
+        if (i > 0) { queue.push(queue.shift()); show(); }
+        const c = deck.cards[queue[0]];
+        ttsMsg.textContent = `聆聽中：第 ${i + 1} / ${n} 張`;
+        card.classList.add("speaking");
+        const ok = await tts.speak("問題。" + c.q);
+        if (my !== listenToken) return;
+        if (!ok) { stopListen("無法播放語音，請確認音量，或換 Chrome、Edge、Safari 再試。"); return; }
+        card.classList.remove("speaking");
+        await sleep(gap * 1000);
+        if (my !== listenToken) return;
+        if (!flipped) flip();
+        card.classList.add("speaking");
+        await tts.speak("答案。" + c.a);
+        if (my !== listenToken) return;
+        card.classList.remove("speaking");
+        await sleep(1500);
+      }
+      if (my === listenToken) stopListen(`聽完一輪 ${n} 張了。可以再按「聽卡模式」重聽，或用「再一次／記住了」自我測驗。`);
+    }
+    speakBtn.onclick = () => {
+      stopListen("");
+      if (stage.hidden) return;
+      const c = deck.cards[queue[0]];
+      tts.speak(flipped ? "答案。" + c.a : "問題。" + c.q).then((ok) => {
+        if (!ok) ttsMsg.textContent = "無法播放語音，請確認音量，或換 Chrome、Edge、Safari 再試。";
+      });
+    };
+    listenBtn.onclick = () => (listening ? stopListen() : listen());
+
+    card.onclick = () => { stopListen(); flip(); };
+    again.onclick = () => { stopListen(); answer(false); };
+    got.onclick = () => { stopListen(); answer(true); };
+    shuffleBtn.onclick = () => { stopListen(); start(); };
     studyKeys = (e) => {
       if (e.target.closest("textarea, input, select, summary, button:not(.fcard)")) return;
       if (stage.hidden) return;
-      if (e.key === " ") { if (e.target === card) return; e.preventDefault(); flip(); }
-      else if (e.key === "1") answer(false);
-      else if (e.key === "2") answer(true);
+      if (e.key === " ") { if (e.target === card) return; e.preventDefault(); stopListen(); flip(); }
+      else if (e.key === "1") { stopListen(); answer(false); }
+      else if (e.key === "2") { stopListen(); answer(true); }
     };
 
     start();
